@@ -15,13 +15,18 @@ int main(int argc, char *argv[])
     qDebug() << ab;
     qint32 i = 0;
 
-#ifdef WIN64
-    i = 1;
-#else // ifdef WIN64
-    i = 2;
-#endif // ifdef WIN64
+
+#ifndef _WIN64
+    qDebug() << "32bit!\n";
+#else // ifndef _WIN64
+    qDebug() << "64bit!\n";
+#endif // ifndef _WIN64
 
     qDebug() << i;
+
+    for (;;) {
+        qDebug() << "wuhan";
+    }
 
     w.show();
 

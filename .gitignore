@@ -1,3 +1,8 @@
+# QT test project 
+# /PEViewPlus_x64
+# /PEViewPlus_x86
+/demo
+
 # C++ objects and libs
 *.slo
 *.lo
@@ -7,7 +12,7 @@
 *.lai
 *.so
 *.so.*
-*.dll
+# *.dll
 *.dylib
 
 # Qt-es

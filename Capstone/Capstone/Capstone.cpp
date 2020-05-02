@@ -1,11 +1,26 @@
-﻿// Hook.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+﻿// Capstone.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
 #include <iostream>
+using namespace std;
+#include "BeaEngine.h"
+#pragma comment(lib,"BeaEngine5_x64.lib")
+int main()
+{
+#ifndef _WIN64
+	cout << "win32" << endl;
+#else
+	cout << "win64" << endl;
+#endif
 
-int main() {
-    std::cout << "Hello World!\n";
-    
+	DISASM infos; int len, i = 0;
+	(void)memset(&infos, 0, sizeof(DISASM)); infos.EIP = (UInt64)main;
+	while ((infos.Error == 0) && (i < 100)) {
+		len = Disasm(&infos); if (infos.Error != UNKNOWN_OPCODE) {
+			(void)puts(infos.CompleteInstr); infos.EIP += len; i++;
+		}
+	} 
+	return 0;
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
