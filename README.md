@@ -15,13 +15,31 @@
 9. 支持代码节的反汇编（可选）。 
 10. 关联重定位表项与代码中的重定位项位置（可选）
 
+**解决方案**
+
+1. PE浏览使用Qt代码实现
+2. 浏览修改权限使用Qt代码实现
+3. 浏览修改安全选项使用Qt代码实现
+
+5. PE文件注入使用纯Vs编写
+6. OEP和ImageBase使用纯VS编写
+
+8. 通过调用vs dll的方式实现shellcode的进程注入！需要在vs引入反汇编
+9. 代码节的反汇编 通过Qt或者Vs dll（返回string） 实现
+
+
+
 **小提示**
 
 1.  PE文件浏览 n 判断文件类型32位/64位
 2.  内存注入和文件注入 n 判断文件类型32位/64位
 3. Inline Hooking n 识别函数头部代码长度 capstone-  www.capstone-engine.org  cuckoo-cuckoosandbox.org
 
+## 代码编写
 
+- c++对象序列化
+
+  [https://www.cnblogs.com/mmc1206x/p/11053826.html](https://www.cnblogs.com/mmc1206x/p/11053826.html)
 
 ## 界面设计
 

@@ -2,17 +2,21 @@
 # /PEViewPlus_x64
 # /PEViewPlus_x86
 
+/build*
+
+
+
 # C++ objects and libs
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.so.*
+# *.slo
+# *.lo
+# *.o
+# *.a
+# *.la
+# *.lai
+# *.so
+# *.so.*
 # *.dll
-*.dylib
+# *.dylib
 
 # Qt-es
 object_script.*.Release
@@ -79,8 +83,8 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
+# x64/
+# x86/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/

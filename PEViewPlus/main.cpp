@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
-
+#include "include/add.h"
 int main(int argc, char *argv[])
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
@@ -11,9 +11,6 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     MainWindow   w;
-    QString ab = "123";
-    qDebug() << ab;
-    qint32 i = 0;
 
 
 #ifndef _WIN64
@@ -22,11 +19,9 @@ int main(int argc, char *argv[])
     qDebug() << "64bit!\n";
 #endif // ifndef _WIN64
 
-    qDebug() << i;
 
-    for (;;) {
-        qDebug() << "wuhan";
-    }
+    int result = add(1, 3);
+    qDebug() << result;
 
     w.show();
 
