@@ -28,6 +28,7 @@ SOURCES += \
         TreeData.cpp \
         main.cpp \
         mainwindow.cpp \
+        tool.cpp \
         treeitem.cpp \
         treemodel.cpp
 

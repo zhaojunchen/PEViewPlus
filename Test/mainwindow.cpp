@@ -99,7 +99,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// 点击事件 起始下表 RVA
+// Treeview 监听事件绑定
 void MainWindow::on_treeView_clicked(const QModelIndex& index)
 {
     TreeItem *t = static_cast<TreeItem *>(index.internalPointer());

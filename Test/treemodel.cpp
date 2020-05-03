@@ -61,6 +61,7 @@
 #include <QStringList>
 
 // ! [0] 数据构造  替换data成为我们需要的内容
+// 为了适配自定义的数据结构 需要动态Model构造函数 item的构造函数是不需修改的
 TreeModel::TreeModel(const QString& data, QObject *parent)
     : QAbstractItemModel(parent)
 {

@@ -1,11 +1,11 @@
 #ifndef TREEDATA_H
 #define TREEDATA_H
-
+#include<QString>
 #ifndef _WIN64
 // 32 bits!
 class TreeData{
 public:
-    TreeData();
+    TreeData(QString _file);
     ~TreeData();
 
 };
