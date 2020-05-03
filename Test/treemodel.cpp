@@ -60,14 +60,15 @@
 
 #include <QStringList>
 
-// ! [0]
+// ! [0] 数据构造  替换data成为我们需要的内容
 TreeModel::TreeModel(const QString& data, QObject *parent)
     : QAbstractItemModel(parent)
 {
     //    explicit TreeItem(const QVector<QVariant>& data,
     //                      TreeItem                * parentItem = nullptr);
-    // 构造出根节点
-    rootItem = new TreeItem({ QString("PE section"), QString("contetn") });
+
+    // 构造出根节点 根节点构造  这个分界点随便构造就得了  文件名
+    rootItem = new TreeItem({ QString("PE section") });
 
     // 模式启动
     setupModelData(data.split('\n'), rootItem);
@@ -99,11 +100,11 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid()) return QVariant();
 
-    if (role != Qt::DisplayRole) return QVariant();
+    if ((role != Qt::DisplayRole) || (index.column() != 0)) return QVariant();
 
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
 
-    return item->data(index.column());
+    return item->data(0);
 }
 
 // ! [3]
@@ -178,7 +179,7 @@ int TreeModel::rowCount(const QModelIndex& parent) const
 }
 
 // ! [8]
-// const QStringList& lines = data.split("\n")
+// 初始函数 在这里构造根节点的子节点及其子孙节点
 void TreeModel::setupModelData(const QStringList& lines, TreeItem *parent)
 {
     QVector<TreeItem *> parents;

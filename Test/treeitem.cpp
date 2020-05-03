@@ -108,6 +108,7 @@ int TreeItem::columnCount() const
 // ! [6] 类型转换
 QVariant TreeItem::data(int column) const
 {
+    //  return QVariant(); 构造无名对象返回
     if ((column < 0) || (column >= m_itemData.size())) return QVariant();
 
     return m_itemData.at(column);

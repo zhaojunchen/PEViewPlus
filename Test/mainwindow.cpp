@@ -4,9 +4,9 @@
 #include <QDebug>
 #include <QFile>
 #include <QMessageBox>
+// todo Qbyte array https://blog.csdn.net/ecourse/article/details/80575691
 
-
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent, int newParameter) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // 设置不可见属性 控件完全不可见
     ui->listView->setVisible(false);
     ui->label->setVisible(false);
+    // 1.
     QStringList stringList1;
     QStringList stringList2;
     QStringList stringList3;
@@ -42,7 +43,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listView_4->setModel(stringMode1);
     ui->listView_4->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    stringList4.append("TT");
+//    stringList4.append(QString::number(123123, 16));
+//    chBuf[20] = "wuhandaxue1";
+//    // 字符串转换问题 QString::number(123123, 16)
+//    QByteArray::toHex();
+//    string key;
+//    sprintf(c,"%02x ");
+//    key = QString::fromUtf8(chBuf);
 
     //    if (stringMode4 != nullptr) {
     //        delete stringMode4;

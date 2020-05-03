@@ -61,15 +61,22 @@
 class TreeItem {
 public:
 
+    // Tree item 的数据项目
     explicit TreeItem(const QVector<QVariant>& data,
                       TreeItem                *parentItem = nullptr);
     ~TreeItem();
-
     void      appendChild(TreeItem *child);
 
+    //  求出子节点
     TreeItem* child(int row);
+
+    //  child数目
     int       childCount() const;
+
+    // 列数
     int       columnCount() const;
+
+    //    data 返回数据列内容 传入的data Vector
     QVariant  data(int column) const;
     int       row() const;
     TreeItem* parentItem();
@@ -78,7 +85,7 @@ private:
 
     QVector<TreeItem *>m_childItems;
 
-    // 成员数据
+    // 成员数据  data函数的实现 就是返回item_Date的某一个列
     QVector<QVariant>m_itemData;
     TreeItem *m_parentItem;
 };

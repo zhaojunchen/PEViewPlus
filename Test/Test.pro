@@ -25,12 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        TreeData.cpp \
         main.cpp \
         mainwindow.cpp \
         treeitem.cpp \
         treemodel.cpp
 
 HEADERS += \
+        TreeData.h \
         mainwindow.h \
         treeitem.h \
         treemodel.h
