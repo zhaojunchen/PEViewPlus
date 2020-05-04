@@ -13,8 +13,8 @@ using std::ios;
 using std::ifstream;
 using std::ofstream;
 
-typedef  unsigned char us;
 
+// PE文件解构 https://blog.csdn.net/adam001521/article/details/84658708
 #ifndef __WIN64
 
 QVector<QByteArray> init(const QString _file) {
@@ -50,7 +50,7 @@ QVector<QByteArray> init(const QString _file) {
 	PIMAGE_NT_HEADERS32 pimage_nt_headers32 = (PIMAGE_NT_HEADERS32)((char*)pimage_dos_header + pimage_dos_header->e_lfanew);
 	/*//show(pimage_nt_headers32, 0x30);*/
 
-	QByteArray ntHeader((char&)(pimage_nt_headers32), sizeof(IMAGE_NT_HEADERS32));
+	QByteArray ntHeader((char*)(pimage_nt_headers32), sizeof(IMAGE_NT_HEADERS32));
 	result.push_back(ntHeader);
 
 	auto numberOfSection = pimage_nt_headers32->FileHeader.NumberOfSections;
@@ -58,21 +58,24 @@ QVector<QByteArray> init(const QString _file) {
 	PIMAGE_SECTION_HEADER pimage_section_header = (PIMAGE_SECTION_HEADER)((char*)pimage_nt_headers32 + sizeof(IMAGE_NT_HEADERS32));
 	//show(pimage_section_header, 20);
 	QVector<DWORD> rawSize(numberOfSection);
+	QVector<DWORD> rawStart(numberOfSection);
+
 	DWORD t;
 	for (auto i = 0; i < numberOfSection; ++i) {
 		QByteArray sectionHeader((char*)pimage_section_header, sizeof(IMAGE_SECTION_HEADER));
 		t = pimage_section_header->SizeOfRawData;
 		rawSize[i] = (t % 0x200 == 0) ? t : ((t / 0x200) + 1) * 0x200;
+		rawStart[i] = pimage_section_header->PointerToRawData;
 		pimage_section_header++;
 		result.push_back(sectionHeader);
 	}
 	char* sectionStart = (char*)pimage_section_header;
 	for (int i = 0; i < numberOfSection; ++i) {
-		QByteArray section(sectionStart, rawSize[i]);
+		QByteArray section((char*)content + rawStart[i], rawSize[i]);
 		sectionStart += rawSize[i];
 		result.push_back(section);
 	}
-
+	delete[]content;
 	return result;
 }
 #else

@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 	cout << endl << t.size();
 	for (auto element : t) {
 		cout << "\nsegement";
-		show(element.data(), 20);
+		show(element.data(), 0x100);
 		
 	}
 	exit(0);

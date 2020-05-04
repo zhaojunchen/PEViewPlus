@@ -1,6 +1,7 @@
 #pragma once
 #include <QDebug>
 #define cout qDebug() <<"LINE "<<__LINE__<<":"
+typedef  unsigned char us;
 
 /** 只是用在标准输出
  *  输入指针 输入大小
