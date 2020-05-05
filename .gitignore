@@ -65,8 +65,10 @@ compile_commands.json
 *.ilk
 *.log
 *tlog
+*.tlog
 *.props
 *.user
 *.idb
 *.obj
+*.vscode
 

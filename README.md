@@ -104,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 ```
-// for vs and qt project
+// for vs and qt project 注意是单个_WIN64
 #ifdef _DEBUG
 #ifndef _WIN64
 #pragma comment(lib,"32bit_debug.lib")
