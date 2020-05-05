@@ -4,7 +4,7 @@
 #include <iostream>
 using namespace std;
 #include "BeaEngine.h"
-#pragma comment(lib,"BeaEngine5_x64.lib")
+//#pragma comment(lib,"BeaEngine5_x64.lib")
 int main()
 {
 #ifndef _WIN64
@@ -13,13 +13,13 @@ int main()
 	cout << "win64" << endl;
 #endif
 
-	DISASM infos; int len, i = 0;
+	/*DISASM infos; int len, i = 0;
 	(void)memset(&infos, 0, sizeof(DISASM)); infos.EIP = (UInt64)main;
 	while ((infos.Error == 0) && (i < 100)) {
 		len = Disasm(&infos); if (infos.Error != UNKNOWN_OPCODE) {
 			(void)puts(infos.CompleteInstr); infos.EIP += len; i++;
 		}
-	} 
+	} */
 	return 0;
 }
 
