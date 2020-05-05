@@ -89,6 +89,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="data.h" />
     <ClInclude Include="PEAnalysis.h" />
     <ClInclude Include="tools.h" />
   </ItemGroup>

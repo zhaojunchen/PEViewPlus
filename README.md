@@ -40,6 +40,40 @@
 - c++对象序列化
 
   [https://www.cnblogs.com/mmc1206x/p/11053826.html](https://www.cnblogs.com/mmc1206x/p/11053826.html)
+  
+- 类型转换
+
+  1. `QByteArray`转化为`QString 16进制`
+
+     ```
+     QByteArray::toHex(' ').toUpper(); // 大写带空格间隔  用于原始数据的输出
+     ```
+
+  2. 整数转换转化为16进制
+
+     ```
+     QString str1 = QString("%1").arg(12, 4, 16, QChar('0')).toUpper();
+     ```
+
+  3. `QByteArray`转化为`QString` 可打印字符
+
+     ```
+     	QString s;
+     	s.reserve(t[0].size());
+     	char space = '.';
+     	for (int i = 0; i < t[0].size(); ++i) {
+     		char ch = t[0].at(i);
+     		if (ch>= 0x20 && ch <= 0x7E) {
+     			s.append(ch);
+     		}else {
+     			s.append(space);
+     		}
+     	}
+     ```
+
+     
+
+  
 
 ## 界面设计
 
