@@ -5,15 +5,15 @@
 **任务点**
 
 1. 可以设计和实现一款PE文件浏览器。像PEview一样（图形界面）浏览所有PE结构(支持32位和64位)，包括但不限于 header, section table, section。
-2. 浏览（修改）每一节的权限。 
-3. 浏览（修改）编译器和OS支持的安全指示，如ASLR，DEP， stackguard, CFG等。
-4. 浏览（修改）IAT、EAT、重定位表、资源节、异常表、证书表。
-5. 对任意PE文件进行Shellcode注入，shellcode支持弹出计 算器、或显示“Injected”字符串。
-6. 修改OEP或ImageBase等。 
-7. 验证PE文件的签名。（可选） 
-8. 支持对任意进程的任意函数进行hooking or in line hooking，Hooking后的shellcode支持弹出 CMD、或计算器、或一组文本字符串消息。（可选）
-9. 支持代码节的反汇编（可选）。 
-10. 关联重定位表项与代码中的重定位项位置（可选）
+2. 浏览（修改）每一节的权限。 （czy）
+3. 浏览（修改）编译器和OS支持的安全指示，如ASLR，DEP， stackguard, CFG等。（czy）
+4. 浏览（修改）IAT、EAT、重定位表、资源节、异常表、证书表。（Ls）
+5. 对任意PE文件进行Shellcode注入，shellcode支持弹出计算器、或显示“Injected”字符串。（LS）
+6. 修改OEP或ImageBase等。 （sfy）
+7. 验证PE文件的签名。（可选） **（sfy）**
+8. 支持对任意进程的任意函数进行hooking or in line hooking，Hooking后的shellcode支持弹出 CMD、或计算器、或一组文本字符串消息。（可选）（zjc）
+9. 支持代码节的反汇编（可选）。 （zjc）
+10. 关联重定位表项与代码中的重定位项位置（可选）（czy）
 
 **解决方案**
 
@@ -31,9 +31,15 @@
 
 **小提示**
 
-1.  PE文件浏览 n 判断文件类型32位/64位
-2.  内存注入和文件注入 n 判断文件类型32位/64位
-3. Inline Hooking n 识别函数头部代码长度 capstone-  www.capstone-engine.org  cuckoo-cuckoosandbox.org
+1. PE文件浏览 n 判断文件类型32位/64位
+
+2. 内存注入和文件注入 n 判断文件类型32位/64位
+
+3. Inline Hooking n 识别函数头部代码长度
+
+   www.capstone-engine.org
+
+   [Micro-Capstone-Engine-API-Documentation](https://github.com/kabeor/Micro-Capstone-Engine-API-Documentation/blob/master/Micro%20Capstone-Engine%20API%20Documentation.md)
 
 ## 代码编写
 
