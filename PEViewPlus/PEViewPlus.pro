@@ -30,6 +30,7 @@ SOURCES += \
         mainwindow.cpp
 
 HEADERS += \
+        include/Disassembly.h \
         include/add.h \
         mainwindow.h
 
@@ -42,15 +43,26 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 
-# STATIC LIB ctrl+f to find $$PWD/x86(if 64 bit else fdo nothing) and replace them with $$PWD/x64
+# STATIC LIB ctrl+f to find $$PWD/x64(if 64 bit else fdo nothing) and replace them with $$PWD/x64
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/x86/ -lStaticLib
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/x86/ -lStaticLibd
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/x64/ -lStaticLib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/x64/ -lStaticLibd
 
-INCLUDEPATH += $$PWD/x86
-DEPENDPATH += $$PWD/x86
+INCLUDEPATH += $$PWD/x64
+DEPENDPATH += $$PWD/x64
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x86/libStaticLib.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x86/libStaticLibd.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x86/StaticLib.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x86/StaticLibd.lib
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x64/libStaticLib.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x64/libStaticLibd.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x64/StaticLib.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x64/StaticLibd.lib
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/x64/ -lDisassembly
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/x64/ -lDisassemblyd
+
+INCLUDEPATH += $$PWD/x64
+DEPENDPATH += $$PWD/x64
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x64/libDisassembly.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x64/libDisassemblyd.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/x64/Disassembly.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/x64/Disassemblyd.lib
