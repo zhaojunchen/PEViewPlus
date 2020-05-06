@@ -3,8 +3,7 @@
 # /PEViewPlus_x86
 
 /build*
-
-
+*.exe
 
 # C++ objects and libs
 # *.slo
