@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <stdio.h>
+#include <string>
 #include <cinttypes>
 #include "capstone/capstone.h"
 using namespace std;
@@ -22,32 +23,103 @@ FILE* __cdecl __iob_func(unsigned i) {
 }
 #endif /* _MSC_VER>=1900 */
 
-//#define CODE "\x55\x48\x8b\x05\xb8\x13\x00\x00"
-#define CODE "\x31\xD2\x68\x74\x69\x70\x00\x54\x58\x6A\x00\x68\x30\x31\x38\x34\x68\x30\x31\x35\x30\x68\x30\x31\x37\x33\x68\x47\x31\x3A\x32\x54\x59\x52\x50\x51\x52\x31\xC9\x64\x8B\x41\x30\x8B\x40\x0C\x8B\x70\x14\xAD\x96\xAD\x8B\x58\x10\x8B\x53\x3C\x01\xDA\x8B\x52\x78\x01\xDA\x8B\x72\x20\x01\xDE\x31\xC9\x41\xAD\x01\xD8\x81\x38\x47\x65\x74\x50\x75\xF4\x81\x78\x04\x72\x6F\x63\x41\x75\xEB\x81\x78\x08\x64\x64\x72\x65\x75\xE2\x8B\x72\x24\x01\xDE\x66\x8B\x0C\x4E\x49\x8B\x72\x1C\x01\xDE\x8B\x14\x8E\x01\xDA\x52\x31\xC9\x51\x68\x61\x72\x79\x41\x68\x4C\x69\x62\x72\x68\x4C\x6F\x61\x64\x54\x53\xFF\xD2\x83\xC4\x10\x68\x6C\x6C\x00\x00\x68\x33\x32\x2E\x64\x68\x75\x73\x65\x72\x54\xFF\xD0\x83\xC4\x0C\x5A\x31\xC9\x68\x6F\x78\x41\x00\x68\x61\x67\x65\x42\x68\x4D\x65\x73\x73\x54\x50\xFF\xD2\x83\xC4\x0C\xFF\xD0\x83\xC4\x18"
-int main() {
+/**
+ * 计算汇编指令中大于等于base的指令地址
+ */
+
+int code_prefixsize(unsigned char* code, int base = 5, int code_size = 20) {
 	csh handle;
 	cs_insn* insn;
-	size_t count;
-	// CS_ARCH_X86,		///< X86 架构 (包括 x86 & x86-64)
+	int result = -1;
+#ifndef _WIN64
 	if (cs_open(CS_ARCH_X86, CS_MODE_32, &handle)) {
+#else
+	if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle)) {
+#endif
 		printf("ERROR: Failed to initialize engine!\n");
 		return -1;
 	}
-	// 反汇编
-	count = cs_disasm(handle, (unsigned char*)CODE, sizeof(CODE) - 1, 0x1000, 0, &insn);
+	if (base > code_size) {
+		return -1;
+	}
+	size_t count = cs_disasm(handle, (unsigned char*)code, code_size, 0x00, 0, &insn);
 	if (count) {
-		size_t j;
-
-		for (j = 0; j < count; j++) {
-			printf("%x:\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+		for (size_t j = 0; j < count; j++) {
+			if (insn[j].address >= base) {
+				result = insn[j].address;
+				break;
+			}
 		}
-
-		cs_free(insn, count);
-	} else
+	} else {
 		printf("ERROR: Failed to disassemble given code!\n");
+		exit(-1);
+	}
+	cs_free(insn, count);
+	return result;
+}
 
-	cs_close(&handle);
+string code_disassembly(unsigned char* code, int code_size, int start = 0) {
+	csh handle;
+	cs_insn* insn;
+#ifndef _WIN64
+	if (cs_open(CS_ARCH_X86, CS_MODE_32, &handle)) {
+#else
+	if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle)) {
+#endif
 
+		printf("ERROR: Failed to initialize engine!\n");
+		exit(-1);
+	}
+
+	size_t count = cs_disasm(handle, (unsigned char*)code, code_size, start, 0, &insn);
+	string result, tmp;
+	if (count) {
+		for (size_t j = 0; j < count; j++) {
+			char buffer[80];
+			memset(buffer, 0, 80);
+#ifndef _WIN64
+			sprintf_s(buffer, "%08llX:\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+#else
+			sprintf_s(buffer, "%016I64X:\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic, insn[j].op_str);
+#endif
+			result.append(buffer);
+		}
+	} else {
+		printf("ERROR: Failed to disassemble given code!\n");
+		exit(-1);
+	}
+	cs_free(insn, count);
+	return result;
+}
+
+unsigned char code_64[85] = {
+	0x6A, 0x60, 0x5A, 0x68, 0x63, 0x61, 0x6C, 0x63, 0x54, 0x59, 0x48, 0x29, 0xD4, 0x65, 0x48, 0x8B,
+	0x32, 0x48, 0x8B, 0x76, 0x18, 0x48, 0x8B, 0x76, 0x10, 0x48, 0xAD, 0x48, 0x8B, 0x30, 0x48, 0x8B,
+	0x7E, 0x30, 0x03, 0x57, 0x3C, 0x8B, 0x5C, 0x17, 0x28, 0x8B, 0x74, 0x1F, 0x20, 0x48, 0x01, 0xFE,
+	0x8B, 0x54, 0x1F, 0x24, 0x0F, 0xB7, 0x2C, 0x17, 0x8D, 0x52, 0x02, 0xAD, 0x81, 0x3C, 0x07, 0x57,
+	0x69, 0x6E, 0x45, 0x75, 0xEF, 0x8B, 0x74, 0x1F, 0x1C, 0x48, 0x01, 0xFE, 0x8B, 0x34, 0xAE, 0x48,
+	0x01, 0xF7, 0x99, 0xFF, 0xD7
+};
+unsigned char code_32[72] = {
+0x31, 0xD2, 0x52, 0x68, 0x63, 0x61, 0x6C, 0x63, 0x54, 0x59, 0x52, 0x51, 0x64, 0x8B, 0x72, 0x30,
+0x8B, 0x76, 0x0C, 0x8B, 0x76, 0x0C, 0xAD, 0x8B, 0x30, 0x8B, 0x7E, 0x18, 0x8B, 0x5F, 0x3C, 0x8B,
+0x5C, 0x3B, 0x78, 0x8B, 0x74, 0x1F, 0x20, 0x01, 0xFE, 0x8B, 0x54, 0x1F, 0x24, 0x0F, 0xB7, 0x2C,
+0x17, 0x42, 0x42, 0xAD, 0x81, 0x3C, 0x07, 0x57, 0x69, 0x6E, 0x45, 0x75, 0xF0, 0x8B, 0x74, 0x1F,
+0x1C, 0x01, 0xFE, 0x03, 0x3C, 0xAE, 0xFF, 0xD7
+};
+
+int main() {
+#ifndef _WIN64
+	int s = code_prefixsize((unsigned char*)code_32);
+	cout << s << endl;
+	string s1 = code_disassembly((unsigned char*)code_32, 72);
+	cout << s1;
+#else
+	int s = code_prefixsize((unsigned char*)code_64);
+	cout << s << endl;
+	string s1 = code_disassembly((unsigned char*)code_64, 85);
+	cout << s1;
+#endif
 	return 0;
 }
 
