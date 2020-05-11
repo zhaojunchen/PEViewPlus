@@ -16,7 +16,7 @@ int MyReadFile(void** pFileAddress)
 {
 	int ret = 0;
 	DWORD Length = 0;
-	//´ò¿ªÎÄ¼ş
+	//æ‰“å¼€æ–‡ä»¶
 	FILE* pf = fopen(FILE_PATH, "rb");
 	if (pf == NULL)
 	{
@@ -25,7 +25,7 @@ int MyReadFile(void** pFileAddress)
 		return ret;
 	}
 
-	//»ñÈ¡ÎÄ¼ş³¤¶È
+	//è·å–æ–‡ä»¶é•¿åº¦
 	ret = GetFileLength(pf, &Length);
 	if (ret != 0 && Length == -1)
 	{
@@ -34,7 +34,7 @@ int MyReadFile(void** pFileAddress)
 		return ret;
 	}
 
-	//·ÖÅä¿Õ¼ä
+	//åˆ†é…ç©ºé—´
 	*pFileAddress = (PVOID)malloc(Length);
 	if (*pFileAddress == NULL)
 	{
@@ -44,7 +44,7 @@ int MyReadFile(void** pFileAddress)
 	}
 	memset(*pFileAddress, 0, Length);
 
-	//¶ÁÈ¡ÎÄ¼ş½øÈëÄÚ´æ
+	//è¯»å–æ–‡ä»¶è¿›å…¥å†…å­˜
 	fread(*pFileAddress, Length, 1, pf);
 
 	fclose(pf);
@@ -56,7 +56,7 @@ int MyReadFile_V2(void** pFileAddress, PCHAR FilePath)
 {
 	int ret = 0;
 	DWORD Length = 0;
-	//´ò¿ªÎÄ¼ş
+	//æ‰“å¼€æ–‡ä»¶
 	FILE* pf = fopen(FilePath, "rb");
 	if (pf == NULL)
 	{
@@ -65,7 +65,7 @@ int MyReadFile_V2(void** pFileAddress, PCHAR FilePath)
 		return ret;
 	}
 
-	//»ñÈ¡ÎÄ¼ş³¤¶È
+	//è·å–æ–‡ä»¶é•¿åº¦
 	ret = GetFileLength(pf, &Length);
 	if (ret != 0 && Length == -1)
 	{
@@ -74,7 +74,7 @@ int MyReadFile_V2(void** pFileAddress, PCHAR FilePath)
 		return ret;
 	}
 
-	//·ÖÅä¿Õ¼ä
+	//åˆ†é…ç©ºé—´
 	*pFileAddress = (PVOID)malloc(Length);
 	if (*pFileAddress == NULL)
 	{
@@ -84,7 +84,7 @@ int MyReadFile_V2(void** pFileAddress, PCHAR FilePath)
 	}
 	memset(*pFileAddress, 0, Length);
 
-	//¶ÁÈ¡ÎÄ¼ş½øÈëÄÚ´æ
+	//è¯»å–æ–‡ä»¶è¿›å…¥å†…å­˜
 	fread(*pFileAddress, Length, 1, pf);
 
 	fclose(pf);
@@ -116,13 +116,13 @@ int FOA_TO_RVA(PVOID FileAddress, DWORD FOA, PDWORD pRVA)
 	PIMAGE_OPTIONAL_HEADER32 pOptionalHeader = (PIMAGE_OPTIONAL_HEADER32)((DWORD)pFileHeader + sizeof(IMAGE_FILE_HEADER));
 	PIMAGE_SECTION_HEADER pSectionGroup = (PIMAGE_SECTION_HEADER)((DWORD)pOptionalHeader + pFileHeader->SizeOfOptionalHeader);
 
-	//FOAÔÚÎÄ¼şÍ·ÖĞ »ò SectionAlignment µÈÓÚ FileAlignment Ê±RVAµÈÓÚFOA
+	//FOAåœ¨æ–‡ä»¶å¤´ä¸­ æˆ– SectionAlignment ç­‰äº FileAlignment æ—¶RVAç­‰äºFOA
 	if (FOA < pOptionalHeader->SizeOfHeaders || pOptionalHeader->SectionAlignment == pOptionalHeader->FileAlignment)
 	{
 		*pRVA = FOA;
 		return ret;
 	}
-	//FOAÔÚ½ÚÇøÖĞ
+	//FOAåœ¨èŠ‚åŒºä¸­
 	for (int i = 0; i < pFileHeader->NumberOfSections; i++)
 	{
 		if (FOA >= pSectionGroup[i].PointerToRawData && FOA < pSectionGroup[i].PointerToRawData + pSectionGroup[i].SizeOfRawData)
@@ -131,9 +131,9 @@ int FOA_TO_RVA(PVOID FileAddress, DWORD FOA, PDWORD pRVA)
 			return ret;
 		}
 	}
-	//Ã»ÓĞÕÒµ½µØÖ·
+	//æ²¡æœ‰æ‰¾åˆ°åœ°å€
 	ret = -4;
-	printf("func FOA_TO_RVA() Error: %d µØÖ·×ª»»Ê§°Ü£¡\n", ret);
+	printf("func FOA_TO_RVA() Error: %d åœ°å€è½¬æ¢å¤±è´¥ï¼\n", ret);
 	return ret;
 }
 
@@ -146,13 +146,13 @@ int RVA_TO_FOA(PVOID FileAddress, DWORD RVA, PDWORD pFOA)
 	PIMAGE_OPTIONAL_HEADER32 pOptionalHeader = (PIMAGE_OPTIONAL_HEADER32)((DWORD)pFileHeader + sizeof(IMAGE_FILE_HEADER));
 	PIMAGE_SECTION_HEADER pSectionGroup = (PIMAGE_SECTION_HEADER)((DWORD)pOptionalHeader + pFileHeader->SizeOfOptionalHeader);
 
-	//RVAÔÚÎÄ¼şÍ·ÖĞ »ò SectionAlignment µÈÓÚ FileAlignment Ê±RVAµÈÓÚFOA
+	//RVAåœ¨æ–‡ä»¶å¤´ä¸­ æˆ– SectionAlignment ç­‰äº FileAlignment æ—¶RVAç­‰äºFOA
 	if (RVA < pOptionalHeader->SizeOfHeaders || pOptionalHeader->SectionAlignment == pOptionalHeader->FileAlignment)
 	{
 		*pFOA = RVA;
 		return ret;
 	}
-	//RVAÔÚ½ÚÇøÖĞ
+	//RVAåœ¨èŠ‚åŒºä¸­
 	for (int i = 0; i < pFileHeader->NumberOfSections; i++)
 	{
 		if (RVA >= pSectionGroup[i].VirtualAddress && RVA < pSectionGroup[i].VirtualAddress + pSectionGroup[i].Misc.VirtualSize)
@@ -161,9 +161,9 @@ int RVA_TO_FOA(PVOID FileAddress, DWORD RVA, PDWORD pFOA)
 			return ret;
 		}
 	}
-	//Ã»ÓĞÕÒµ½µØÖ·
+	//æ²¡æœ‰æ‰¾åˆ°åœ°å€
 	ret = -4;
-	printf("func RVA_TO_FOA() Error: %d µØÖ·×ª»»Ê§°Ü£¡\n", ret);
+	printf("func RVA_TO_FOA() Error: %d åœ°å€è½¬æ¢å¤±è´¥ï¼\n", ret);
 	return ret;
 }
 
@@ -172,9 +172,9 @@ int RVA_TO_FOA(PVOID FileAddress, DWORD RVA, PDWORD pFOA)
 
 int checkFile(PVOID FileAddress)
 {
-	int ret = 1;
+	int ret = 0;
 	PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)(FileAddress);
-	//¼ÆËãPEÍ·Î»ÖÃ
+	//è®¡ç®—PEå¤´ä½ç½®
 	PIMAGE_NT_HEADERS pNTHeader = (PIMAGE_NT_HEADERS)((DWORD)FileAddress + pDosHeader->e_lfanew);
 	PIMAGE_FILE_HEADER pFileHeader = (PIMAGE_FILE_HEADER)((DWORD)pDosHeader + pDosHeader->e_lfanew + 4);
 	PIMAGE_OPTIONAL_HEADER32 pOptionalHeader = (PIMAGE_OPTIONAL_HEADER32)((DWORD)pFileHeader + sizeof(IMAGE_FILE_HEADER));
