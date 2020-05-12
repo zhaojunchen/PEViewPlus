@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PEInject", "PEInject\PEInject.vcxproj", "{880A127E-C228-41F3-906E-475050E0643F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PEInfo", "PEInfo\PEInfo.vcxproj", "{27292CD2-68B9-4CE2-9F59-0BFA833C9D28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{880A127E-C228-41F3-906E-475050E0643F}.Debug|x86.ActiveCfg = Debug|Win32
-		{880A127E-C228-41F3-906E-475050E0643F}.Debug|x86.Build.0 = Debug|Win32
-		{880A127E-C228-41F3-906E-475050E0643F}.Release|x86.ActiveCfg = Release|Win32
-		{880A127E-C228-41F3-906E-475050E0643F}.Release|x86.Build.0 = Release|Win32
+		{27292CD2-68B9-4CE2-9F59-0BFA833C9D28}.Debug|x86.ActiveCfg = Debug|Win32
+		{27292CD2-68B9-4CE2-9F59-0BFA833C9D28}.Debug|x86.Build.0 = Debug|Win32
+		{27292CD2-68B9-4CE2-9F59-0BFA833C9D28}.Release|x86.ActiveCfg = Release|Win32
+		{27292CD2-68B9-4CE2-9F59-0BFA833C9D28}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {302BC85B-1D94-4E4F-A39C-FAB95E7AE515}
+		SolutionGuid = {893B6FD9-1106-4CD9-96F6-B91A7B06CD94}
 	EndGlobalSection
 EndGlobal
