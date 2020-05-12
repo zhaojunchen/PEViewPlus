@@ -4,16 +4,25 @@
 int main(int argc, char *argv[]) {
 	QCoreApplication a(argc, argv);
 	/*Write your code*/
+	// ≥ı ºªØdesc
 
 	QVector<QByteArray> t = init("C:/test.exe");
-	init_listView();
+	// init_listView();
+	details detail = init_dosHeader(0x400000, t[1]);
+	for (int i = 0; i < detail.va.size(); ++i) {
+		qDebug() << detail.va[i] << "\t " << detail.data[i] << "\t" << detail.desc[i];
+	
+		
+		/*qDebug("%s %s %s", detail.va[i], detail.data[i], detail.desc[i]);*/
+		
+	}
+	
 	
 
 	exit(0);
 
 	return a.exec();
 }
-
 
 /**
  * //cout << endl << t.size();
