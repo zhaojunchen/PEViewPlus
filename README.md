@@ -40,6 +40,8 @@
    www.capstone-engine.org
 
    [Micro-Capstone-Engine-API-Documentation](https://github.com/kabeor/Micro-Capstone-Engine-API-Documentation/blob/master/Micro%20Capstone-Engine%20API%20Documentation.md)
+   
+   
 
 ## 代码编写
 
@@ -79,7 +81,9 @@
 
      
 
+  4. 加速编译
   
+     [https://blog.csdn.net/libaineu2004/article/details/89352224](https://blog.csdn.net/libaineu2004/article/details/89352224)
 
 ## 界面设计
 
