@@ -37,4 +37,5 @@ void show(void *src, int size) {
         p++;
     }
 }
-# endif
+
+#endif // ifndef TOOL_CPP

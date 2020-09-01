@@ -1,7 +1,3 @@
-# QT test project 
-# /PEViewPlus_x64
-# /PEViewPlus_x86
-
 /build*
 *.exe
 
