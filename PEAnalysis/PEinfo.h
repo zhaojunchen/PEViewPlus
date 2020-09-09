@@ -8,6 +8,7 @@ public:
     static qint32 pe_section;
     static QStringList pe_digest;
 };
+
 // init static member
 QString PEinfo::pe_name = "";
 qint32  PEinfo::pe_section = -1;

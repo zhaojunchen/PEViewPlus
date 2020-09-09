@@ -13,14 +13,15 @@ void show(void *src, int size) {
     }
 }
 
-bool isPE32(LPVOID ImageBase) {
+
+bool isPE32(LPVOID content) {
     PIMAGE_DOS_HEADER pDH = NULL;
     PIMAGE_NT_HEADERS pNtH = NULL;
 
-    if (!ImageBase) return FALSE;
+    if (!content) return FALSE;
 
     /* DOS 数据结构解析！*/
-    pDH = (PIMAGE_DOS_HEADER)ImageBase;
+    pDH = (PIMAGE_DOS_HEADER)content;
 
     if (pDH->e_magic != IMAGE_DOS_SIGNATURE) return FALSE;
 
@@ -33,14 +34,14 @@ bool isPE32(LPVOID ImageBase) {
     return FALSE;
 }
 
-bool isPE64(LPVOID ImageBase) {
-    PIMAGE_DOS_HEADER pDH = NULL;
+bool isPE64(LPVOID content) {
+    PIMAGE_DOS_HEADER   pDH = NULL;
     PIMAGE_NT_HEADERS64 pNtH = NULL;
 
-    if (!ImageBase) return FALSE;
+    if (!content) return FALSE;
 
     /* DOS 数据结构解析！*/
-    pDH = (PIMAGE_DOS_HEADER)ImageBase;
+    pDH = (PIMAGE_DOS_HEADER)content;
 
     if (pDH->e_magic != IMAGE_DOS_SIGNATURE) return FALSE;
 

@@ -9,12 +9,15 @@
 // Qt Hex View
 #ifndef __WIN64
 
-details     init_rawData(int               startVa,
-                         const QByteArray& byte);
+details init_rawData(int               startVa,
+                     const QByteArray& byte);
+
+// 二进制byte数组转化为可显示的字符串
 QStringList QByteArrayToACSIIString(const QByteArray& byte);
 
+
 // 原始数据显示
-details     init_rawData(int startVa, const QByteArray& byte) {
+details init_rawData(int startVa, const QByteArray& byte) {
     details b;
     auto    byteSize = byte.size();
     int     turn = (byteSize % 16 == 0) ? byteSize / 16 : byteSize / 16 + 1;
@@ -34,13 +37,15 @@ details     init_rawData(int startVa, const QByteArray& byte) {
     for (i = 0; i < turn - 1; ++i) {
         b.data.append(raw.mid(i * 48, 48));
     }
+
     b.data.append(raw.mid(i * 48));
+
     b.value = QByteArrayToACSIIString(byte);
 
     return b;
 }
 
-QVector<QByteArray>init(const QString _file) {
+QVector<QByteArray>init(const QString& _file) {
     const string file = _file.toStdString();
 
     ifstream in (file, ios::binary);
@@ -58,9 +63,16 @@ QVector<QByteArray>init(const QString _file) {
     memset(content, 0, fileSize);
     in.read(reinterpret_cast<char *>(content), fileSize);
     in.close();
+    bool ispe32 = isPE32(content);
+    bool ispe64 = isPE64(content);
 
-    if (!isPE32(content)) {
-        cout << "The File is not a PE32 file";
+    if (!ispe32 && ispe64) {
+        cout << "The File is not a PE file";
+        exit(-1);
+    }
+
+    if (ispe64) {
+        cout << "The file is pe64 please open it with pe64";
         exit(-1);
     }
 
@@ -70,6 +82,7 @@ QVector<QByteArray>init(const QString _file) {
 
     // DOS HEADER
     PIMAGE_DOS_HEADER pimage_dos_header = (PIMAGE_DOS_HEADER)content;
+
     QByteArray dosHeader((char *)content, sizeof(IMAGE_DOS_HEADER));
     result.push_back(dosHeader);
 
@@ -120,6 +133,8 @@ QVector<QByteArray>init(const QString _file) {
     delete[]content;
     return result;
 }
+
+
 
 QVector<details>init_listView() {
     QVector<QByteArray> raw = init("C:/test.exe");
@@ -208,7 +223,6 @@ details init_dosHeader(int startVa, QByteArray byte) {
 
     //  存储每一项的数据大小
     QVector<int> it_size;
-
     it_size.reserve(30);
     QVector<int> it_value;
     it_size.reserve(30);
@@ -590,11 +604,11 @@ details init_option_header(int startVa, const QByteArray& byte) {
     return d;
 }
 
-//details init_section_header(int startVa, const QByteArray& b) {
+// details init_section_header(int startVa, const QByteArray& b) {
 //    PIMAGE_SECTION_HEADER p = (PIMAGE_SECTION_HEADER)b.data();
 
 
-//}
+// }
 
 #else // ifndef __WIN64
 

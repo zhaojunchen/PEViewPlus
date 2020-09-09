@@ -9,6 +9,7 @@ class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
+
     /**
      * @brief TreeModel     输入字符串，构造所有的树的节点
      * @param data          输入的字符串
@@ -35,6 +36,7 @@ public:
                       int                column,
                       const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
+
     /**
      * @brief rowCount  返回QModelIndex的行数  默认为QModelIndex()即是树的根节点
      * @param parent    父节点下的行数
@@ -42,15 +44,17 @@ public:
      */
     int         rowCount(const QModelIndex& parent = QModelIndex()) const
     override;
+
     /**
      * @brief columnCount   QModelIndex的列数 最简单的就是2列
      * @param parent
      * @return
      */
-    int         columnCount(const QModelIndex& parent = QModelIndex()) const
+    int columnCount(const QModelIndex& parent = QModelIndex()) const
     override;
 
 private:
+
     /**
      * @brief setupModelData    初始化数组
      * @param lines
