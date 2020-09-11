@@ -21,6 +21,7 @@ public:
 	size_t file_size;
 	const us*content;
 	int startVA = 0;
+	int index_section_rdata;// rdata拥有IAT和INT 需要记住相应的位置
 
 	PIMAGE_DOS_HEADER dos_header;// size is sizeof(IMAGE_DOS_HEADER)
 	// DosStud  is start at dos_header+sizeof(IMAGE_DOS_HEADER) size is (dos_header->e_lfanew-sizeof(IMAGE_DOS_HEADER))
@@ -391,7 +392,7 @@ public:
 		Q_ASSERT(node->data.size() == node->addr.size() && node->value.size() == node->desc.size() && node->data.size() == node->value.size());
 		return node;
 	}
-	Node*init_nt_header_optional_header(int startVA = 0) {
+	Node*init_nt_headers_optional_header(int startVA = 0) {
 		Node*node = new Node("IMAGE_OPTIONAL_HEADER", true, true);
 		auto header = &nt_header->OptionalHeader;
 		int N = 24;// Magic to CheckSum
@@ -812,27 +813,130 @@ public:
 		}
 		return ret;
 	}
-	Node*init_rdata_IAT() {
-		auto IAT_RVA = data_directory[1].VirtualAddress;
-		auto IAT_SIZE = data_directory[1].Size;
+	QVector<Node*>init_rdata() {
+		Node*node_IAT = new Node("Import Address Table", true, true);
+		Node*node_INT = new Node("Import Name Table", true, true);
+		Node*node_IDT = new Node("Import Name Table", true, true);
+		//1 ：定位导入表
+		//2 : 解析第一个IID项, 根据IID中的第4个字段定位DLL的名称
+		//3 : 根据IID项的第5个字段DLL对应的IAT项的起始地址
+		//4 : 根据IAT中的指针定位到相应API函数名称字符串
+		//5 : 通过GetProcAddress获取API函数的地址并填充到IAT中
+		//6 : 当定位到的IAT项为零的时候表示该DLL的API函数地址获取完毕了, 接着继续解析第二个IID, 重复上面的步骤。
+		// 引入描述符表 IID  IMAGE_IMPORT_DESCRIPTOR
+		auto IID_RVA = data_directory[1].VirtualAddress;
+		auto IID_SIZE = data_directory[1].Size;
+		int N_IID = (IID_SIZE / 20) - 1;
 		// 确定RVA所在的段
 		auto p = section_header;
 		auto N = nt_header->FileHeader.NumberOfSections;
+		// Import
+		this->index_section_rdata = 0;
 		for (int i = 0; i < N; i++) {
-			if (IAT_RVA >= p->VirtualAddress&&IAT_RVA < p->VirtualAddress + p->SizeOfRawData) {
+			if (IID_RVA >= p->VirtualAddress&&IID_RVA < p->VirtualAddress + p->SizeOfRawData) {
 				break;
 			}
 			p++;
+			this->index_section_rdata++;
 		}
-		cout << *p->Name;
+
+		// RVA_Address - (p->)
+		auto dis = p->VirtualAddress - p->PointerToRawData;
+		auto IID_file_offset = IID_RVA - dis;
+		PIMAGE_IMPORT_DESCRIPTOR IID = (PIMAGE_IMPORT_DESCRIPTOR)(content + IID_file_offset);
 
 		auto IAT_file_offset = p->PointerToRawData;
-		auto FOA = IAT_RVA - IAT_file_offset;
+		auto FOA = IID_RVA - IAT_file_offset;
 		auto IAT = (PIMAGE_IMPORT_DESCRIPTOR)((char*)content + FOA);
 
-		Node*node = new Node("Import Address Table", true, true);
+		for (int i = 0; i < N_IID; i++) {
+			QString dllName = (char*)(content + (IID->Name - dis));
+			// (FIRSTTRUNK)IAT函数加载地址  (ORIGNALFIRST_TRUNK)INT函数的导入序号 组合为IMAGE_IMPORT_BY_NAME
+			cout << dllName;
+			const static QStringList desc = { "Import Name Table RVA" ,"Time Data Stamp","Forward Chain","Name RVA","Import Address Table RVA" };
+			for (int i = 0; i < 5; i++) {
+				node_IDT->addr.push_back(Addr(IID_RVA, 4));
+				node_IDT->desc.push_back(desc[i]);
+				if (i == 3) {
+					node_IDT->value.push_back(dllName);
+				}
+				IID_RVA += 4;
+			}
+			node_IDT->data.push_back(Addr(IID->OriginalFirstThunk, 4));
+			node_IDT->data.push_back(Addr(IID->TimeDateStamp, 4));
+			node_IDT->data.push_back(Addr(IID->ForwarderChain, 4));
+			node_IDT->data.push_back(Addr(IID->Name, 4));
+			node_IDT->data.push_back(Addr(IID->FirstThunk, 4));
 
-		return node;
+			node_IDT->addr.push_back("");
+			node_IDT->data.push_back("");
+			node_IDT->desc.push_back("");
+			node_IDT->value.push_back("");
+
+			node_IAT->addr.push_back("");
+			node_IAT->data.push_back("");
+			node_IAT->desc.push_back("Import function table as follows");
+			node_IAT->value.push_back(dllName);
+
+			PIMAGE_THUNK_DATA32 INT = (PIMAGE_THUNK_DATA32)(content + (IID->OriginalFirstThunk - dis));
+			// PIMAGE_THUNK_DATA32 IAT = (PIMAGE_THUNK_DATA32)(content + (IID->FirstThunk - dis));
+			//对于可执行文件而言，IAT中的IMAGE_THUNK_DATA中存储的要么是Ordinal，要么是AddressOfData。
+			//怎么判断IMAGE_THUNK_DATA中存储的是Ordinal(函数序号) 还是 AddressOfData(指向IMAGE_IMPORT_BYNAME) 呢？
+			//众所周知，在32bit的机器上，地址空间是00000000 - FFFFFFFF,
+			//一般而言，其中00000000 - 7FFFFFFF是用户空间，其它是系统空间。
+			//于是，看IMAGE_THUNK_DATA的最高位，如果是1，就是Ordinal，否则就是AddressOfData。
+			// 未初始化的时候IAT和INT是一样的在初始化后 IAT变为函数的实际地址  INT可以重建IAT故而叫做 orignal thunk
+			DWORD value;
+			// 全为0的时候结束循环
+			WORD hint;
+			PIMAGE_IMPORT_BY_NAME pName;
+			QString functionName;
+			// IAT的起始值
+
+			int RVA;
+			// IAT
+
+			auto RVA_IAT = IID->FirstThunk + startVA;
+
+			auto RVA_INT = IID->OriginalFirstThunk + startVA;
+
+			while ((value = INT->u1.Ordinal) != 0) {
+				if (value & 0x80000000 != 0) {// Ordinal
+					// cout << "do nothing";
+					node_IAT->value.push_back(Unknown);
+				} else {//AddressOfData
+					// 函数名字的地址
+					pName = (PIMAGE_IMPORT_BY_NAME)(content + (value - dis));
+					hint = pName->Hint;
+					functionName = (char*)pName + 2;
+					// node->data 为thunk的值
+					// cout << Addr(RVA, 4) << hint << "\t" << functionName;
+					node_IAT->value.push_back(functionName);
+				}
+
+				node_IAT->addr.push_back(Addr(RVA_IAT, 4));
+				node_INT->addr.push_back(Addr(RVA_INT, 4));
+				node_IAT->data.push_back(Addr(value, 4));
+				node_IAT->desc.push_back("Hint/Name");
+
+				RVA += 4;
+				INT++;
+			}
+			node_IAT->addr.push_back("");
+			node_IAT->data.push_back("");
+			node_IAT->desc.push_back("");
+			node_IAT->value.push_back("");
+			IID++;
+		}
+		node_INT->data = node_IAT->data;
+		node_INT->value = node_IAT->value;
+		node_INT->desc = node_IAT->desc;
+		QVector<Node*> ret;
+		ret.reserve(3);
+		ret.push_back(node_IDT);
+		ret.push_back(node_IAT);
+		ret.push_back(node_INT);
+		return ret;
 	}
 
 	/* 产生解释内容  1. node节点 2. 文件偏移开始地址 3.文件块实际大小
