@@ -23,7 +23,9 @@
 #include <QDebug>
 #include <unordered_map>
 #include <vector>
+#include <unordered_set>
 #include <QtAlgorithms>
+
 #define cout qDebug()
 #define Addr(value, size) QString("%1").arg((value), (size) << 1, 16, \
     QChar('0')).toUpper()

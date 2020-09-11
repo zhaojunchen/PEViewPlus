@@ -63,10 +63,10 @@ public:
 		bool ispe64 = isPE64(content);
 
 		if (!ispe32 && !ispe64) {
-			error("文件类型错误");
+            // error("文件类型错误");
 		}
 		if (ispe64) {
-			error("文件打开方式错误 64位pe文件,请使用32位打开");
+            // error("文件打开方式错误 64位pe文件,请使用32位打开");
 		}
 		startVA = 0;
 		// DOS HEADER
