@@ -28,22 +28,6 @@ void test4(Node* node) {
 	}
 }
 
-void init_pe_allnodes(PE&pe, QVector<Node*> &nodes) {
-	nodes.push_back(pe.init_pe_file());
-	nodes.push_back(pe.init_dos_header());
-	nodes.push_back(pe.init_dos_stub());
-	nodes.push_back(pe.init_nt_header());
-	nodes.push_back(pe.init_nt_headers_signature());
-	nodes.push_back(pe.init_nt_headers_file_header());
-	nodes.push_back(pe.init_nt_headers_optional_header());
-	auto section_table = pe.init_section_header();
-	for (int i = 0; i < section_table.size(); i++) {
-		nodes.push_back(section_table[i]);
-		// pe.init_section();
-	}
-	//pe.init_rdata(); include IAT INT IID
-	// auto p = pe.init_reloc_table(); 资源节
-}
 int main(int argc, char *argv[]) {
 	QCoreApplication a(argc, argv);
 	clock_t startTime = clock();
@@ -51,17 +35,20 @@ int main(int argc, char *argv[]) {
 	//QString file = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
 	QString file = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
 	PE pe(file);
-	QVector<Node*> nodes;
+	for (auto it : pe.treeList) {
+		cout << it;
+	}
+	//QVector<Node*> nodes;
 	//init_pe_allnodes(pe, nodes);
 
 	// pe.init_section(); 但是节之间存在更多的node 比如说IAT之类的
 
-	auto what = pe.init_edata();
-	//test4(p);
-	// auto what = pe.init_section_header();
-	for (auto item : what) {
-		test4(item);
-	}
+	//auto what = pe.init_edata();
+	////test4(p);
+	//// auto what = pe.init_section_header();
+	//for (auto item : what) {
+	//	test4(item);
+	//}
 
 	myclock(startTime);
 

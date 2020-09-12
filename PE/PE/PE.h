@@ -20,6 +20,8 @@ public:
 	QString file_name;
 	size_t file_size;
 	const us*content;
+	QVector<Node*>nodes;
+	QStringList treeList;
 	int startVA = 0;
 	int index_section_rdata;// rdata拥有IAT和INT 需要记住相应的位置
 	int index_reloc_table;
@@ -41,7 +43,10 @@ public:
 		}
 	}
 	PE(QString _file) :file_name(_file) {
+		// 文件初始化
 		init(file_name);
+		// 构造初始化
+		init_pe_allnodes();
 	}
 	// 使用pe文件 初始化PE类及其成员变量
 	void init(const QString& _file) {
@@ -106,7 +111,11 @@ public:
 	Node*init_dos_header() {
 		Node*node = new Node("IMAGE_DOS_HEADER", true, false);
 		// 使用静态局部变量
-		const static QStringList desc = { "Magic number","Bytes on last page of file","Pages in file","Relocations","Size of header in paragraphs","Minimum extra paragraphs needed","Maximum extra paragraphs needed","Initial (relative) SS value","Initial SP value","Checksum","Initial IP value","Initial (relative) CS value","File address of relocation table","Overlay number","Reserved words","Reserved words","Reserved words","Reserved words","OEM identifier (for e_oeminfo)","OEM information; e_oemid specific","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","File address of new exe header" };
+		const static QStringList desc = { "Magic number","Bytes on last page of file",
+											"Pages in file","Relocations","Size of header in paragraphs",
+			"Minimum extra paragraphs needed","Maximum extra paragraphs needed",
+			"Initial (relative) SS value","Initial SP value","Checksum",
+			"Initial IP value","Initial (relative) CS value","File address of relocation table","Overlay number","Reserved words","Reserved words","Reserved words","Reserved words","OEM identifier (for e_oeminfo)","OEM information; e_oemid specific","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","Reserved words","File address of new exe header" };
 		node->desc = desc;
 		Q_ASSERT(node->desc.size() == 31);
 		QVector<int> it_size;
@@ -944,12 +953,12 @@ public:
 	Node* init_reloc_table() {
 		int size = data_directory[5].Size;
 		if (size == 0) return nullptr;
-		Node * node = new Node("IMAG_BASE_RELOCATION", true, true);
+		Node * node = new Node("IMAGE_BASE_RELOCATION", true, true);
 		int IDR_RVA = data_directory[5].VirtualAddress;
 
 		// IMAGE_BASE_RELOCATION
 		//PIMAGE_BASE_RELOCATION ibr
-		this->index_section_rdata = 0;
+		this->index_reloc_table = 0;
 		int N = nt_header->FileHeader.NumberOfSections;
 		auto p = section_header;
 		this->index_reloc_table = 0;
@@ -1167,6 +1176,65 @@ public:
 		// always true: N_Name <= N_FUnction
 
 		return ret;
+	}
+	void init_pe_allnodes() {
+		// rdata拥有IAT和INT 需要记住相应的位置
+		this->index_section_rdata = -1;
+		this->index_reloc_table = -1;
+		this->index_sectionEAT = -1;
+		nodes.push_back(this->init_pe_file());
+		nodes.push_back(this->init_dos_header());
+		nodes.push_back(this->init_dos_stub());
+		nodes.push_back(this->init_nt_header());
+		nodes.push_back(this->init_nt_headers_signature());
+		nodes.push_back(this->init_nt_headers_file_header());
+		nodes.push_back(this->init_nt_headers_optional_header());
+
+		auto section_table = this->init_section_header();
+		for (int i = 0; i < section_table.size(); i++) {
+			nodes.push_back(section_table[i]);
+		}
+		auto section = this->init_section();
+
+		auto numberOfSection = this->nt_header->FileHeader.NumberOfSections;
+		// 输入表
+		auto rdataVector = this->init_rdata();
+		// 输出表
+		auto edataVector = this->init_edata();
+		// 重定位节
+		auto relocTable = this->init_reloc_table();
+
+		for (int i = 0; i < numberOfSection; i++) {
+			nodes.push_back(section[i]);
+			// 重定位表
+			if (i == this->index_reloc_table) {
+				nodes.push_back(relocTable);
+			}
+			// 输入表
+			if (i == this->index_section_rdata) {
+				for (auto it : rdataVector) {
+					nodes.push_back(it);
+				}
+			}
+			// 输出表(exe 一般没有)
+			if (i == this->index_sectionEAT) {
+				for (auto it : edataVector) {
+					nodes.push_back(it);
+				}
+			}
+		}
+
+		treeList.push_back(nodes[0]->head);
+		QString onespace = " ";
+		QString twospace = "  ";
+
+		for (int i = 1; i < nodes.size(); i++) {
+			if (nodes[i]->isSubTreeNode) {
+				treeList.push_back(twospace + nodes[i]->head);
+			} else {
+				treeList.push_back(onespace + nodes[i]->head);
+			}
+		}
 	}
 
 	/* 产生解释内容  1. node节点 2. 文件偏移开始地址 3.文件块实际大小
