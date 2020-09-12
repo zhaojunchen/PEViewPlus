@@ -27,7 +27,7 @@
 #include <QtAlgorithms>
 
 #define cout qDebug()
-#define Addr(value, size) QString("%1").arg((value), (size) << 1, 16, \
+#define Addr(value, size) QString("  %1  ").arg((value), (size) << 1, 16, \
     QChar('0')).toUpper()
 
 typedef  unsigned char us;

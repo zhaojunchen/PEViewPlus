@@ -22,6 +22,8 @@ public:
 	const us*content;
 	int startVA = 0;
 	int index_section_rdata;// rdata拥有IAT和INT 需要记住相应的位置
+	int index_reloc_table;
+	int index_sectionEAT;
 
 	PIMAGE_DOS_HEADER dos_header;// size is sizeof(IMAGE_DOS_HEADER)
 	// DosStud  is start at dos_header+sizeof(IMAGE_DOS_HEADER) size is (dos_header->e_lfanew-sizeof(IMAGE_DOS_HEADER))
@@ -816,7 +818,7 @@ public:
 	QVector<Node*>init_rdata() {
 		Node*node_IAT = new Node("Import Address Table", true, true);
 		Node*node_INT = new Node("Import Name Table", true, true);
-		Node*node_IDT = new Node("Import Name Table", true, true);
+		Node*node_IDT = new Node("Import Descriptor Table", true, true);
 		//1 ：定位导入表
 		//2 : 解析第一个IID项, 根据IID中的第4个字段定位DLL的名称
 		//3 : 根据IID项的第5个字段DLL对应的IAT项的起始地址
@@ -936,6 +938,234 @@ public:
 		ret.push_back(node_IDT);
 		ret.push_back(node_IAT);
 		ret.push_back(node_INT);
+		return ret;
+	}
+
+	Node* init_reloc_table() {
+		int size = data_directory[5].Size;
+		if (size == 0) return nullptr;
+		Node * node = new Node("IMAG_BASE_RELOCATION", true, true);
+		int IDR_RVA = data_directory[5].VirtualAddress;
+
+		// IMAGE_BASE_RELOCATION
+		//PIMAGE_BASE_RELOCATION ibr
+		this->index_section_rdata = 0;
+		int N = nt_header->FileHeader.NumberOfSections;
+		auto p = section_header;
+		this->index_reloc_table = 0;
+		for (int i = 0; i < N; i++) {
+			if (IDR_RVA >= p->VirtualAddress&&IDR_RVA < p->VirtualAddress + p->SizeOfRawData) {
+				break;
+			}
+			p++;
+			this->index_reloc_table++;
+		}
+		auto dis = p->VirtualAddress - p->PointerToRawData;
+		// auto IDR_file_offset = IDR_RVA - dis;
+
+		PIMAGE_BASE_RELOCATION pIbr = (PIMAGE_BASE_RELOCATION)(content + (IDR_RVA - dis));
+		int count, i;
+		WORD type_value_high_4, type_value_low_12;
+		WORD * type;
+		const static int fix_head = 8;
+		const static unordered_map<WORD, QString> desc = { {0,"  IMAGE_REL_BASE_ABSOLUTE"},{3,"  IMAGE_REL_BASE_HIGHLOW"},{10, "  IMAGE_REL_BASE_DIR64"} };
+		DWORD IDR_RVA_BAKE;
+		DWORD base;
+		while (size > 0) {
+			// 资源节块的四个起始内容
+			IDR_RVA_BAKE = IDR_RVA + startVA;
+			node->addr.push_back(Addr(IDR_RVA_BAKE, 4));
+			IDR_RVA_BAKE += 4;
+			node->addr.push_back(Addr(IDR_RVA_BAKE, 4));
+			IDR_RVA_BAKE += 4;
+			cout << Addr(pIbr->VirtualAddress, 4);
+			cout << Addr(pIbr->SizeOfBlock, 4);
+			node->data.push_back(Addr(pIbr->VirtualAddress, 4));
+			node->data.push_back(Addr(pIbr->SizeOfBlock, 4));
+
+			node->desc.push_back("RVA if Block");
+			node->desc.push_back("Size of Block");
+			node->value.push_back("");
+			node->value.push_back("");
+
+			count = (pIbr->SizeOfBlock - fix_head) >> 1;
+			type = (WORD*)((char*)pIbr + fix_head);
+			base = pIbr->VirtualAddress;
+			for (i = 0; i < count; i++) {
+				type_value_high_4 = (((*type) >> 12) & 0x000f);
+				type_value_low_12 = (*type) & 0x0fff;
+				node->addr.push_back(Addr(IDR_RVA_BAKE, 4));
+				node->data.push_back(Addr(*type, 2));
+				node->desc.push_back("RVA Type");
+				node->value.push_back(Addr(base + type_value_low_12 + startVA, 4) + mapToValue(desc, type_value_high_4));
+
+				//cout << Addr(*type, 2);
+				type++;
+				IDR_RVA_BAKE += 2;
+			}
+
+			size -= pIbr->SizeOfBlock;
+			IDR_RVA += pIbr->SizeOfBlock;
+			pIbr = (PIMAGE_BASE_RELOCATION)(content + (IDR_RVA - dis));
+		}
+		return node;
+	}
+
+	QVector<Node*>init_edata() {
+		auto IED_RVA = data_directory[0].VirtualAddress;
+		auto IED_SIZE = data_directory[0].Size;
+		QVector<Node*> ret;
+		if (IED_SIZE == 0) return ret;
+		Node*node_EAT = new Node("Export Address Table", true, true);
+		Node*node_ENT = new Node("Export Name Pointer Table", true, true);
+		Node*node_EOT = new Node("Export order Table", true, true);
+		Node*node_EDT = new Node("Export Descriptor Table", true, true);
+
+		ret.reserve(4);
+		ret.push_back(node_EDT);
+		ret.push_back(node_EAT);
+		ret.push_back(node_ENT);
+		ret.push_back(node_EOT);
+
+		// 确定RVA所在的段
+		auto p = section_header;
+		auto N = nt_header->FileHeader.NumberOfSections;
+		// Import
+		this->index_sectionEAT = 0;
+		for (int i = 0; i < N; i++) {
+			if (IED_RVA >= p->VirtualAddress&&IED_RVA < p->VirtualAddress + p->SizeOfRawData) {
+				break;
+			}
+			p++;
+			this->index_sectionEAT++;
+		}
+		int dis = p->VirtualAddress - p->PointerToRawData;
+		int IED_file_offset = IED_RVA - dis;
+
+		// RVA_Address - (p->)
+
+		PIMAGE_EXPORT_DIRECTORY EDT = (PIMAGE_EXPORT_DIRECTORY)(content + IED_file_offset);
+		N = 11; // EDT成员个数
+		int RVA = data_directory[0].VirtualAddress + startVA;
+
+		QString dllName = (char*)(content + (EDT->Name - dis));
+		// (FIRSTTRUNK)IAT函数加载地址  (ORIGNALFIRST_TRUNK)INT函数的导入序号 组合为IMAGE_IMPORT_BY_NAME
+		cout << "dll name :" << dllName;
+		const static QStringList desc = { "Characteristics",
+										  "TimeDateStamp",
+										  "MajorVersion",
+										  "MinorVersion",
+										  "Name",
+										  "Base",
+										  "NumberOfFunctions",
+										  "NumberOfNames",
+										  "AddressOfFunctions",
+										  "AddressOfNames",
+										  "AddressOfNameOrdinals" };
+
+		QVector<int> it_value;
+		QVector<int> it_size;
+
+		it_size.reserve(N);
+		it_value.reserve(N);
+
+		auto it0 = EDT->Characteristics;
+		auto it1 = EDT->TimeDateStamp;
+		auto it2 = EDT->MajorVersion;
+		auto it3 = EDT->MinorVersion;
+		auto it4 = EDT->Name;
+		auto it5 = EDT->Base;
+		auto it6 = EDT->NumberOfFunctions;
+		auto it7 = EDT->NumberOfNames;
+		auto it8 = EDT->AddressOfFunctions;
+		auto it9 = EDT->AddressOfNames;
+		auto it10 = EDT->AddressOfNameOrdinals;
+
+		it_size.push_back(sizeof(it0));
+		it_size.push_back(sizeof(it1));
+		it_size.push_back(sizeof(it2));
+		it_size.push_back(sizeof(it3));
+		it_size.push_back(sizeof(it4));
+		it_size.push_back(sizeof(it5));
+		it_size.push_back(sizeof(it6));
+		it_size.push_back(sizeof(it7));
+		it_size.push_back(sizeof(it8));
+		it_size.push_back(sizeof(it9));
+		it_size.push_back(sizeof(it10));
+
+		it_value.push_back(it0);
+		it_value.push_back(it1);
+		it_value.push_back(it2);
+		it_value.push_back(it3);
+		it_value.push_back(it4);
+		it_value.push_back(it5);
+		it_value.push_back(it6);
+		it_value.push_back(it7);
+		it_value.push_back(it8);
+		it_value.push_back(it9);
+		it_value.push_back(it10);
+		for (int i = 0; i < N; i++) {
+			node_EDT->addr.push_back(Addr(RVA, 4));
+			node_EDT->data.push_back(Addr(it_value[i], it_size[i]));
+			if (i == 4) {
+				node_EDT->value.push_back(dllName);
+			} else {
+				node_EDT->value.push_back("");
+			}
+			node_EDT->desc.push_back(desc[i]);
+		}
+
+		// EDT 解析完成
+		// 开始解析ENT表
+		QString functoinName;
+		auto N_Name = EDT->NumberOfNames, N_Function = EDT->NumberOfFunctions;
+		DWORD *funName = (DWORD*)(content + (EDT->AddressOfNames - dis));
+		WORD *funIndex = (WORD*)(content + (EDT->AddressOfNameOrdinals - dis));
+		cout << "N_Function " << N_Name << "N_Name" << N_Name;
+
+		// 初始化ENT EOT
+		auto EOT_RVA = EDT->AddressOfNameOrdinals + startVA;
+		auto ENT_RVA = EDT->AddressOfNames + startVA;
+		for (int i = 0; i < N_Name; i++) {
+			functoinName = (char*)(content + (*funName - dis));
+			node_EOT->addr.push_back(Addr(EOT_RVA, 4));
+			node_ENT->addr.push_back(Addr(ENT_RVA, 4));
+			node_EOT->data.push_back(Addr(*funIndex, 2));
+			node_ENT->data.push_back(Addr(*funName, 4));
+			node_EOT->desc.push_back("Function ordinal");
+			node_ENT->desc.push_back("Function Name PVA");
+			node_EOT->value.push_back(Addr(*funIndex, 2) + functoinName);
+			node_ENT->value.push_back(Addr(*funIndex, 2) + functoinName);
+
+			//cout << "EOT Addr" << Addr(EDT->AddressOfNameOrdinals + i * 2 + startVA, 4)<<"EOTvalue"<<;
+			//cout << "ENT Addr" << Addr(EDT->AddressOfNames + i * 4 + startVA, 4);
+
+			//cout << functoinName << " " << Addr(*funIndex, 2) << " " << Addr(*funName, 4);
+			funName++;
+			funIndex++;
+			EOT_RVA += 2;
+			ENT_RVA += 4;
+		}
+
+		auto EAT_RVA = EDT->AddressOfFunctions;
+		DWORD* addressOfFunctions = (DWORD*)(content + (EDT->AddressOfFunctions - dis));
+		for (int i = 0, j = 0; i < EDT->NumberOfFunctions; i++) {
+			node_EAT->addr.push_back(Addr(EAT_RVA, 4));
+			node_EAT->data.push_back(Addr(*addressOfFunctions, 4));
+			if (*addressOfFunctions != 0) {
+				node_EAT->desc.push_back("Function RVA");
+				node_EAT->value.push_back(node_EOT->value[j]);
+				j++;
+			} else {
+				node_EAT->desc.push_back("");
+				node_EAT->value.push_back("");
+			}
+			addressOfFunctions++;
+			EAT_RVA += 4;
+		}
+
+		// always true: N_Name <= N_FUnction
+
 		return ret;
 	}
 
