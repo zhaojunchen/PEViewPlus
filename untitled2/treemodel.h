@@ -51,10 +51,6 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
-#include <QAbstractItemModel>
-#include <QModelIndex>
-#include <QVariant>
-
 class TreeItem;
 
 // ! [0]

@@ -1,30 +1,23 @@
 #include "pch.h"
 #include "PE.h"
-void test(Node*node) {
-	int size = node->addr.size();
-	cout << node->head;
-	for (int i = 0; i < size; i++) {
-		cout << node->addr[i] << "\t" << node->data[i] << "\t" << node->value[i];
-	}
-}
-void testNode(Node*pe_file) {
-	cout << pe_file->addr.size() << " " << pe_file->data.size() << " " << pe_file->value.size();
-	Q_ASSERT(pe_file->addr.size() == pe_file->data.size() && pe_file->data.size() == pe_file->value.size());
-
-	test(pe_file);
-}
 
 void myclock(clock_t startTime) {
 	cout << "The run time is: " << (double)(clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
 }
 
 // ËÄÁÐ²âÊÔ
-void test4(Node* node) {
-	Q_ASSERT(node->addr.size() == node->data.size() && node->desc.size() == node->value.size() && node->addr.size() == node->value.size());
-
-	cout << node->addr.size() << " " << node->data.size() << " " << node->desc.size() << node->value.size();
-	for (int i = 0; i < node->addr.size(); i++) {
-		cout << node->addr[i] << "\t" << node->data[i] << "\t" << node->desc[i] << "\t" << node->value[i];
+void test(Node* node) {
+	if (node->hasDesc) {
+		Q_ASSERT(node->addr.size() == node->data.size() && node->desc.size() == node->value.size() && node->addr.size() == node->value.size());
+		cout << node->addr.size() << " " << node->data.size() << " " << node->desc.size() << node->value.size();
+		for (int i = 0; i < node->addr.size(); i++) {
+			cout << node->addr[i] << "\t" << node->data[i] << "\t" << node->desc[i] << "\t" << node->value[i];
+		}
+	} else {
+		Q_ASSERT(node->addr.size() == node->data.size() && node->data.size() == node->value.size());
+		for (int i = 0; i < node->addr.size(); i++) {
+			cout << node->addr[i] << "\t" << node->data[i] << "\t" << node->value[i];
+		}
 	}
 }
 
@@ -33,11 +26,12 @@ int main(int argc, char *argv[]) {
 	clock_t startTime = clock();
 
 	//QString file = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
-	QString file = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
+	//QString file = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
+	QString file = "C:\\Users\\zjc98\\Desktop\\proj4.dll";
 	PE pe(file);
-	for (auto it : pe.treeList) {
-		cout << it;
-	}
+	//for (auto it : pe.treeList) {
+	//	cout << it;
+	//}
 	//QVector<Node*> nodes;
 	//init_pe_allnodes(pe, nodes);
 
@@ -46,8 +40,8 @@ int main(int argc, char *argv[]) {
 	//auto what = pe.init_edata();
 	////test4(p);
 	//// auto what = pe.init_section_header();
-	//for (auto item : what) {
-	//	test4(item);
+	//for (auto item : pe.init_rdata()) {
+	//	test(item);
 	//}
 
 	myclock(startTime);

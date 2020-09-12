@@ -71,7 +71,7 @@ TreeModel::TreeModel(const QStringList& data, QObject *parent)
     //    rootItem = new TreeItem({ tr("Title"), QVariant::fromValue(wrapper)
     // });
 
-    rootItem = new TreeItem({ tr("tree"), -1 });
+    rootItem = new TreeItem({ tr("tree")});
 
     // QStringList data_1 = {"A","   B","    C","        D","        E","
     //    F","        G"};
@@ -104,25 +104,12 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid()) return QVariant();
 
-    //    if (index.column() != 0) return QVariant();
+    if (index.column() != 0) return QVariant();
 
 
     if (role != Qt::DisplayRole) return QVariant();
 
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
-
-    //    if (index.column() == 1) { return
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //         QVariant::fromValue(item->data(1).value<Wrapper>().node->head);
-    //    }
     return item->data(index.column());
 }
 

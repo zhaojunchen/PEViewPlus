@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "PE.h"
 #include "treemodel.h"
-#include <QStandardItemModel>
+#include "treeitem.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setCentralWidget(ui->splitter);
     ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 5);
+    ui->splitter->setStretchFactor(1, 4);
 
     // 不可编辑
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -31,30 +30,85 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableView->horizontalHeader()->setHighlightSections(false);
     ui->tableView->verticalHeader()->setHidden(true);
 
-    QStandardItemModel *model = new QStandardItemModel(this);
-    PE   pe("C:\\Users\\zjc98\\Desktop\\leetcode32R.exe");
-    auto node = pe.init_pe_file();
+    tableModel = new QStandardItemModel(this);
+
+    //    QString filePath = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
+
+    QString filePath = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
+    pe = new PE(filePath);
+    auto node = pe->nodes[0];
     QStandardItem *p;
 
-    model->setColumnCount(3);
+    tableModel->setColumnCount(3);
 
-    model->setHeaderData(0, Qt::Horizontal, QString("Addr"));
-    model->setHeaderData(1, Qt::Horizontal, QString("Data"));
-    model->setHeaderData(2, Qt::Horizontal, QString("Value"));
+    tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+    tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+    tableModel->setHeaderData(2, Qt::Horizontal, QString("Value"));
+
 
     for (int i = 0; i < node->addr.size(); i++) {
         p = new QStandardItem(node->addr[i]);
-        model->setItem(i, 0, new QStandardItem(node->addr[i]));
-        model->setItem(i, 1, new QStandardItem(node->data[i]));
-        model->setItem(i, 2, new QStandardItem(node->value[i]));
+        tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+        tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+        tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
     }
 
-    ui->tableView->setModel(model);
+    ui->tableView->setModel(tableModel);
 
-    // ui->treeView->setModel();
+    treeModel = new TreeModel(pe->treeList);
+
+    ui->treeView->setModel(treeModel);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_treeView_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) return;
+
+    TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+
+    auto clickIndex = item->data(1).value<int>();
+
+    if (lastClick != clickIndex) {
+        refreshTableModel(pe->nodes[item->data(1).value<int>()]);
+        lastClick = clickIndex;
+        qDebug() << item->data(1);
+    }
+}
+
+void MainWindow::refreshTableModel(Node *node)
+{
+    this->tableModel->clear();
+
+    if (node->hasDesc) {
+        tableModel->setColumnCount(4);
+        tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+        tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+        tableModel->setHeaderData(2, Qt::Horizontal, QString("Desc"));
+        tableModel->setHeaderData(3, Qt::Horizontal, QString("Value"));
+
+        for (int i = 0; i < node->addr.size(); i++) {
+            tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+            tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+            tableModel->setItem(i, 2, new QStandardItem(node->desc[i]));
+            tableModel->setItem(i, 3, new QStandardItem(node->value[i]));
+        }
+    } else {
+        tableModel->setColumnCount(3);
+        tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+        tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+        tableModel->setHeaderData(2, Qt::Horizontal, QString("Value"));
+
+
+        for (int i = 0; i < node->addr.size(); i++) {
+            tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+            tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+            tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
+        }
+    }
+    ui->tableView->update();
 }

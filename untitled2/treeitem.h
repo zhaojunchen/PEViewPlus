@@ -1,3 +1,5 @@
+
+#include "PE.h"
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
@@ -51,30 +53,33 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
-#include <QVariant>
-#include <QVector>
-
-//! [0]
-class TreeItem
-{
+// ! [0]
+class TreeItem {
 public:
-    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parentItem = nullptr);
+
+    explicit TreeItem(const QVector<QVariant>& data,
+                      TreeItem                *parentItem = nullptr);
     ~TreeItem();
 
-    void appendChild(TreeItem *child);
+    void      appendChild(TreeItem *child);
 
-    TreeItem *child(int row);
-    int childCount() const;
-    int columnCount() const;
-    QVariant data(int column) const;
-    int row() const;
-    TreeItem *parentItem();
+    TreeItem* child(int row);
+    int       childCount() const;
+    int       columnCount() const;
+    QVariant  data(int column) const;
+    int       row() const;
+    TreeItem* parentItem();
 
 private:
-    QVector<TreeItem*> m_childItems;
-    QVector<QVariant> m_itemData;
+
+    QVector<TreeItem *>m_childItems;
+    QVector<QVariant>m_itemData;
     TreeItem *m_parentItem;
+
 };
-//! [0]
+
+
+
+// ! [0]
 
 #endif // TREEITEM_H

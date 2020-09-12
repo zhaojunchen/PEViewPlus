@@ -51,7 +51,7 @@
 
 #define cout qDebug()
 #define Addr(value, size) QString("  %1  ").arg((value), (size) << 1, 16, \
-    QChar('0')).toUpper()
+                                                QChar('0')).toUpper()
 
 typedef  unsigned char us;
 
@@ -62,18 +62,3 @@ using std::ofstream;
 using std::map;
 using std::unordered_map;
 using std::vector;
-//void error(QString message) {
-//    qDebug() << "error message"<<message;
-//	exit(-1);
-//}
-//void show(void *src, int size) {
-//	char *p = (char *)src;
-
-//	for (int i = 0; i < size; i++) {
-//		if (i % 16 == 0) {
-//			printf("\n");
-//		}
-//		printf("%02X ", static_cast<unsigned char>(*p));
-//		p++;
-//	}
-//}
