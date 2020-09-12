@@ -1,0 +1,2 @@
+C:\Users\22758\Desktop\PEViewPlus\ChangeImageBase\ChangeImageBase\x64\Debug\ChangeImageBase.exe
+C:\Users\22758\Desktop\PEViewPlus\ChangeImageBase\ChangeImageBase\x64\Debug\ChangeImageBase.pdb
