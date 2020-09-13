@@ -1,64 +1,71 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of The Qt Company Ltd nor the names of its
+**     contributors may be used to endorse or promote products derived
+**     from this software without specific prior written permission.
+**
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #ifndef TREEITEM_H
 #define TREEITEM_H
-
 
 // ! [0]
 class TreeItem {
 public:
 
-    // data parent
-
-    /**
-     * @brief TreeItem      添加一个树形节点元素
-     * @param data          添加数据元素类型为QVector类型
-     * @param parentItem    新建节点的父节点
-     */
     explicit TreeItem(const QVector<QVariant>& data,
                       TreeItem                *parentItem = nullptr);
     ~TreeItem();
 
-    /**
-     * @brief appendChild   节点添加父节点
-     * @param child         将child节点作为this的子节点
-     */
     void      appendChild(TreeItem *child);
 
-    /**
-     * @brief child     返回this的父节点
-     * @param row       子节点的编号（按照行的顺序排列）
-     * @return
-     */
     TreeItem* child(int row);
-
-    /**
-     * @brief childCount    返回this的子节点数目
-     * @return
-     */
     int       childCount() const;
-
-    /**
-     * @brief columnCount   this的data部分（QVector的size值）
-     * @return
-     */
     int       columnCount() const;
-
-    /**
-     * @brief data      返回data的某一个index
-     * @param column    column index
-     * @return          返回QVar
-     */
     QVariant  data(int column) const;
-
-    /**
-     * @brief row   当前节点相对于父节点的row（行号） index
-     * @return      返回显示index
-     */
     int       row() const;
-
-    /**
-     * @brief parentItem    返回当前节点的父节点
-     * @return
-     */
     TreeItem* parentItem();
 
 private:
@@ -66,7 +73,10 @@ private:
     QVector<TreeItem *>m_childItems;
     QVector<QVariant>m_itemData;
     TreeItem *m_parentItem;
+
 };
+
+
 
 // ! [0]
 

@@ -1,7 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
+#include "PE.h"
+#include "treemodel.h"
 
 
 namespace Ui {
@@ -15,7 +16,7 @@ public:
 
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    static QString file;
+    QString file = "";
 
 private slots:
 
@@ -27,9 +28,23 @@ private slots:
 
     void on_actionAbout_triggered();
 
+    void on_treeView_clicked(const QModelIndex& index);
+
+    void on_actionDisassembly_triggered();
+
+    void on_actionAboutQt_triggered();
+
 private:
 
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui = nullptr;
+    QStandardItemModel *tableModel = nullptr;
+    TreeModel *treeModel = nullptr;
+    PE *pe = nullptr;
+    int lastClick = 0;
+    QString lastFileName = "";
+
+
+    void refreshTableModel(Node *node);
 };
 
 

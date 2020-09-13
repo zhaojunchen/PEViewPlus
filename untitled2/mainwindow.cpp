@@ -32,9 +32,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     tableModel = new QStandardItemModel(this);
 
-    //    QString filePath = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
+    //        QString filePath = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
 
-    QString filePath = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
+    QString filePath = "C:\\Users\\zjc98\\Desktop\\vsjitdebuggerui.dll";
     pe = new PE(filePath);
     auto node = pe->nodes[0];
     QStandardItem *p;

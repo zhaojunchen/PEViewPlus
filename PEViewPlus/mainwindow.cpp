@@ -1,14 +1,38 @@
 #include "mainwindow.h"
+#include "treeitem.h"
 #include "ui_mainwindow.h"
+#include "include/Disassembly.h"
 
-QString MainWindow::file = "C:/test.exe";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    setWindowState(Qt::WindowMaximized);
+
     ui->setupUi(this);
     setCentralWidget(ui->splitter);
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 4);
+
+    // 不可编辑
+    ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // 选中一行而非的那个单元格
+    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    // 列宽随内容变化
+    ui->tableView->horizontalHeader()->setSectionResizeMode(
+        QHeaderView::ResizeToContents);
+
+
+    // 取消网格线
+    ui->tableView->setShowGrid(false);
+    ui->tableView->horizontalHeader()->setHighlightSections(false);
+    ui->tableView->verticalHeader()->setHidden(true);
+
+    tableModel = new QStandardItemModel(this);
+    ui->tableView->setModel(tableModel);
 }
 
 MainWindow::~MainWindow()
@@ -18,19 +42,112 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionopen_triggered()
 {
-    //    QString curPath=QDir::currentPath();//获取系统当前目录
-    QString path = "C:/";
-    QString title = "选择PE文件";                // 对话框标题
-    QString filter = "PE文件(*exe *dll *lib)"; // 文件过滤器
-    MainWindow::file = QFileDialog::getOpenFileName(this, title, path, filter);
-    if(MainWindow::file.isEmpty()){
+    // 弹出打开文件对话框
+    QString curPath = QDir::currentPath();       // 获取系统当前目录
+    QString title = "Please Open .dll or .exe "; // 对话框标题
+    QString filter = "PE File(*exe *dll)";       // 文件过滤器
+    MainWindow::file = QFileDialog::getOpenFileName(this, title, curPath, filter);
+
+    if (MainWindow::file.isEmpty()) {
         return;
     }
+
+    // 通过记录上次打开的文件、避免重复打开相同的文件
+    lastFileName = "";
+
+    if (lastFileName == file) {
+        return;
+    } else {
+        lastFileName = file;
+    }
+    cout << file;
+
+    // file有效，准备打开新的文件
+
+    // 打开之前的清理工作
+    // 清理PE结构，回收其分配的new
+    if (this->pe != nullptr) {
+        delete this->pe;
+        this->pe = nullptr;
+    }
+
+    // 清理treeModel
+    if (treeModel != nullptr) {
+        // 具体的没有编写清除的方法，只有将其回收，并且新new一个
+        delete treeModel;
+        treeModel = nullptr;
+    }
+
+    // 清除treeView的显示
+    ui->treeView->setModel(nullptr);
+
+    // 清理tableModel的内容
+    tableModel->clear();
+
+    // 清理tableView的显示
+    ui->tableView->update();
+
+    // 初始化操作
+    pe = new PE(file);
+
+    // 优化自己点击自己、造成的TableView刷新开销
+    lastClick = 0;
+
+    // 自动展示首个节点
+    auto node = pe->nodes[0];
+
+    // 载入初始化tableModel显示
+
+    tableModel->setColumnCount(3);
+
+    tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+    tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+    tableModel->setHeaderData(2, Qt::Horizontal, QString("Value"));
+
+
+    for (int i = 0; i < node->addr.size(); i++) {
+        tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+        tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+        tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
+    }
+
+    treeModel = new TreeModel(pe->treeList);
+    ui->treeView->setModel(treeModel);
+
+    //    自动展开 treeView
+    ui->treeView->expandAll();
 }
 
 void MainWindow::on_actionClose_triggered()
 {
-    //    todo  清除内容
+    // no file is opened
+    if (file == "") {
+        return;
+    }
+    file = "";
+    lastFileName = "";
+
+
+    if (this->pe != nullptr) {
+        delete this->pe;
+        this->pe = nullptr;
+    }
+
+    // 清理treeModel
+    if (treeModel != nullptr) {
+        // 具体的没有编写清除的方法，只有将其回收，并且新new一个
+        delete treeModel;
+        treeModel = nullptr;
+    }
+
+    // 清除treeView的显示
+    ui->treeView->setModel(nullptr);
+
+    // 清理tableModel的内容
+    tableModel->clear();
+
+    // 清理tableView的显示
+    ui->tableView->update();
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -47,4 +164,81 @@ void MainWindow::on_actionAbout_triggered()
     QMessageBox::about(this,
                        title,
                        info);
+}
+
+void MainWindow::refreshTableModel(Node *node)
+{
+    this->tableModel->clear();
+
+    if (node->hasDesc) {
+        tableModel->setColumnCount(4);
+        tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+        tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+        tableModel->setHeaderData(2, Qt::Horizontal, QString("Desc"));
+        tableModel->setHeaderData(3, Qt::Horizontal, QString("Value"));
+
+        for (int i = 0; i < node->addr.size(); i++) {
+            tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+            tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+            tableModel->setItem(i, 2, new QStandardItem(node->desc[i]));
+            tableModel->setItem(i, 3, new QStandardItem(node->value[i]));
+        }
+    } else {
+        tableModel->setColumnCount(3);
+        tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
+        tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
+        tableModel->setHeaderData(2, Qt::Horizontal, QString("Value"));
+
+
+        for (int i = 0; i < node->addr.size(); i++) {
+            tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+            tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+            tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
+        }
+    }
+    ui->tableView->update();
+}
+
+void MainWindow::on_treeView_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) return;
+
+    TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+
+    auto clickIndex = item->data(1).value<int>();
+
+    if (lastClick != clickIndex) {
+        refreshTableModel(pe->nodes[item->data(1).value<int>()]);
+        lastClick = clickIndex;
+        qDebug() << item->data(1);
+    }
+}
+
+void MainWindow::on_actionDisassembly_triggered()
+{
+    if (pe == nullptr) return;
+
+    auto sizeOfCode = pe->nt_header->OptionalHeader.SizeOfCode; // 实际代码
+    auto baseOfCode = pe->nt_header->OptionalHeader.BaseOfCode; // RVA
+    auto RVA = baseOfCode;
+    auto p = pe->section_header;
+
+    for (int i = 0; i < pe->nt_header->FileHeader.NumberOfSections; i++) {
+        if ((RVA >= p->VirtualAddress) &&
+            (RVA < (p->VirtualAddress + p->SizeOfRawData))) {
+            break;
+        }
+        p++;
+    }
+    auto dis = p->VirtualAddress - p->PointerToRawData;
+    auto file_offset = baseOfCode - dis;
+
+    //    auto disas = code_disassembly((us *)pe->content, sizeOfCode,
+    // file_offset);
+    //    cout << QString(QString::fromLocal8Bit(disas.c_str()));
+}
+
+void MainWindow::on_actionAboutQt_triggered()
+{
+    QMessageBox::aboutQt(this);
 }

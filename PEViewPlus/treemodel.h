@@ -1,6 +1,55 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of The Qt Company Ltd nor the names of its
+**     contributors may be used to endorse or promote products derived
+**     from this software without specific prior written permission.
+**
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
-
 
 class TreeItem;
 
@@ -10,21 +59,10 @@ class TreeModel : public QAbstractItemModel {
 
 public:
 
-    /**
-     * @brief TreeModel     输入字符串，构造所有的树的节点
-     * @param data          输入的字符串
-     * @param parent        父节点
-     */
-    explicit TreeModel(const QString& data,
-                       QObject       *parent = nullptr);
+    explicit TreeModel(const QStringList& data,
+                       QObject           *parent = nullptr);
     ~TreeModel();
 
-    /**
-     * @brief data      返回QModelIndex这个节点的数据
-     * @param index
-     * @param role      每一项的数据节点
-     * @return
-     */
     QVariant      data(const QModelIndex& index,
                        int                role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -36,30 +74,13 @@ public:
                       int                column,
                       const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
-
-    /**
-     * @brief rowCount  返回QModelIndex的行数  默认为QModelIndex()即是树的根节点
-     * @param parent    父节点下的行数
-     * @return
-     */
     int         rowCount(const QModelIndex& parent = QModelIndex()) const
     override;
-
-    /**
-     * @brief columnCount   QModelIndex的列数 最简单的就是2列
-     * @param parent
-     * @return
-     */
-    int columnCount(const QModelIndex& parent = QModelIndex()) const
+    int         columnCount(const QModelIndex& parent = QModelIndex()) const
     override;
 
 private:
 
-    /**
-     * @brief setupModelData    初始化数组
-     * @param lines
-     * @param parent
-     */
     void setupModelData(const QStringList& lines,
                         TreeItem          *parent);
 

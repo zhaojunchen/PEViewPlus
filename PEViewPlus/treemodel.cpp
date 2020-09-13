@@ -53,129 +53,148 @@
 
     Provides a simple tree model to show how to create and use hierarchical
     models.
-*/
+ */
 
 #include "treemodel.h"
 #include "treeitem.h"
 
+#include <QStringList>
+#include "PE.h"
 
-//! [0]
-TreeModel::TreeModel(const QString &data, QObject *parent)
+// ! [0]
+TreeModel::TreeModel(const QStringList& data, QObject *parent)
     : QAbstractItemModel(parent)
 {
-    rootItem = new TreeItem({tr("Title"), tr("Summary")});
-    setupModelData(data.split('\n'), rootItem);
-}
-//! [0]
+    // 传入的是一个QVector
 
-//! [1]
+    // title
+    //    rootItem = new TreeItem({ tr("Title"), QVariant::fromValue(wrapper)
+    // });
+
+    rootItem = new TreeItem({ tr("PE File Structure Tree") });
+
+    // QStringList data_1 = {"A","   B","    C","        D","        E","
+    //    F","        G"};
+    setupModelData(data, rootItem);
+}
+
+// ! [0]
+
+// ! [1]
 TreeModel::~TreeModel()
 {
     delete rootItem;
 }
-//! [1]
 
-//! [2]
-int TreeModel::columnCount(const QModelIndex &parent) const
+// ! [1]
+
+// ! [2]
+int TreeModel::columnCount(const QModelIndex& parent) const
 {
-    if (parent.isValid())
-        return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
+    if (parent.isValid()) return static_cast<TreeItem *>(parent.internalPointer())
+               ->columnCount();
+
     return rootItem->columnCount();
 }
-//! [2]
 
-//! [3]
-QVariant TreeModel::data(const QModelIndex &index, int role) const
+// ! [2]
+
+// ! [3]
+QVariant TreeModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid())
-        return QVariant();
+    if (!index.isValid()) return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
+    if (index.column() != 0) return QVariant();
 
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
 
+    if (role != Qt::DisplayRole) return QVariant();
+
+    TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
     return item->data(index.column());
 }
-//! [3]
 
-//! [4]
-Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
+// ! [3]
+
+// ! [4]
+Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
-    if (!index.isValid())
-        return Qt::NoItemFlags;
+    if (!index.isValid()) return Qt::NoItemFlags;
 
     return QAbstractItemModel::flags(index);
 }
-//! [4]
 
-//! [5]
+// ! [4]
+
+// ! [5]
 QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    if (section != 0) return QVariant();
+
+    if ((orientation == Qt::Horizontal) &&
+        (role == Qt::DisplayRole)) {
         return rootItem->data(section);
+    }
 
     return QVariant();
 }
-//! [5]
 
-//! [6]
-QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
+// ! [5]
+
+// ! [6]
+QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if (!hasIndex(row, column, parent))
-        return QModelIndex();
+    if (!hasIndex(row, column, parent)) return QModelIndex();
 
     TreeItem *parentItem;
 
-    if (!parent.isValid())
-        parentItem = rootItem;
-    else
-        parentItem = static_cast<TreeItem*>(parent.internalPointer());
+    if (!parent.isValid()) parentItem = rootItem;
+    else parentItem = static_cast<TreeItem *>(parent.internalPointer());
 
     TreeItem *childItem = parentItem->child(row);
-    if (childItem)
-        return createIndex(row, column, childItem);
+
+    if (childItem) return createIndex(row, column, childItem);
+
     return QModelIndex();
 }
-//! [6]
 
-//! [7]
-QModelIndex TreeModel::parent(const QModelIndex &index) const
+// ! [6]
+
+// ! [7]
+QModelIndex TreeModel::parent(const QModelIndex& index) const
 {
-    if (!index.isValid())
-        return QModelIndex();
+    if (!index.isValid()) return QModelIndex();
 
-    TreeItem *childItem = static_cast<TreeItem*>(index.internalPointer());
+    TreeItem *childItem = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parentItem();
 
-    if (parentItem == rootItem)
-        return QModelIndex();
+    if (parentItem == rootItem) return QModelIndex();
 
     return createIndex(parentItem->row(), 0, parentItem);
 }
-//! [7]
 
-//! [8]
-int TreeModel::rowCount(const QModelIndex &parent) const
+// ! [7]
+
+// ! [8]
+int TreeModel::rowCount(const QModelIndex& parent) const
 {
     TreeItem *parentItem;
-    if (parent.column() > 0)
-        return 0;
 
-    if (!parent.isValid())
-        parentItem = rootItem;
-    else
-        parentItem = static_cast<TreeItem*>(parent.internalPointer());
+    if (parent.column() > 0) return 0;
+
+    if (!parent.isValid()) parentItem = rootItem;
+    else parentItem = static_cast<TreeItem *>(parent.internalPointer());
 
     return parentItem->childCount();
 }
-//! [8]
 
-void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
+// ! [8]
+
+void TreeModel::setupModelData(const QStringList& lines, TreeItem *parent)
 {
-    QVector<TreeItem*> parents;
+    QVector<TreeItem *> parents;
     QVector<int> indentations;
+
     parents << parent;
     indentations << 0;
 
@@ -183,9 +202,9 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
 
     while (number < lines.count()) {
         int position = 0;
+
         while (position < lines[number].length()) {
-            if (lines[number].at(position) != ' ')
-                break;
+            if (lines[number].at(position) != ' ') break;
             position++;
         }
 
@@ -193,18 +212,19 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
 
         if (!lineData.isEmpty()) {
             // Read the column data from the rest of the line.
-            const QStringList columnStrings = lineData.split('\t', QString::SkipEmptyParts);
+
             QVector<QVariant> columnData;
-            columnData.reserve(columnStrings.count());
-            for (const QString &columnString : columnStrings)
-                columnData << columnString;
+            columnData.reserve(2);
+
+            columnData << lineData << number;
 
             if (position > indentations.last()) {
                 // The last child of the current parent is now the new parent
                 // unless the current parent has no children.
 
                 if (parents.last()->childCount() > 0) {
-                    parents << parents.last()->child(parents.last()->childCount()-1);
+                    parents << parents.last()->child(
+                        parents.last()->childCount() - 1);
                     indentations << position;
                 }
             } else {

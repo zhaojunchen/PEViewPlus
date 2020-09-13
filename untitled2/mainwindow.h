@@ -1,9 +1,7 @@
-
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 #include "PE.h"
 #include "treemodel.h"
-#ifndef MAINWINDOW_H
-# define MAINWINDOW_H
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,7 +25,7 @@ private:
     QStandardItemModel *tableModel = nullptr;
     TreeModel *treeModel = nullptr;
     PE *pe = nullptr;
-    int lastClick = -1;
+    int lastClick = 0;
     void refreshTableModel(Node *node);
 };
 #endif // MAINWINDOW_H
