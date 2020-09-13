@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include "treeitem.h"
 #include "ui_mainwindow.h"
-#include "include/Disassembly.h"
+#include "Disassembly.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    // 添加图标，有意者可以更换
+    setWindowIcon(QIcon(":/pic/logo.png"));
     setWindowState(Qt::WindowMaximized);
 
     ui->setupUi(this);
@@ -233,9 +235,11 @@ void MainWindow::on_actionDisassembly_triggered()
     auto dis = p->VirtualAddress - p->PointerToRawData;
     auto file_offset = baseOfCode - dis;
 
-    //    auto disas = code_disassembly((us *)pe->content, sizeOfCode,
-    // file_offset);
-    //    cout << QString(QString::fromLocal8Bit(disas.c_str()));
+    auto disas =
+        code_disassembly((us *)(pe->content + file_offset), sizeOfCode, 0);
+    dialogDecompiler = new DialogDecompiler(this, disas);
+    dialogDecompiler->setModal(true);
+    dialogDecompiler->show();
 }
 
 void MainWindow::on_actionAboutQt_triggered()

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "PE.h"
+#include "dialogdecompiler.h"
 #include "treemodel.h"
 
 
@@ -42,6 +43,7 @@ private:
     PE *pe = nullptr;
     int lastClick = 0;
     QString lastFileName = "";
+    DialogDecompiler *dialogDecompiler;
 
 
     void refreshTableModel(Node *node);

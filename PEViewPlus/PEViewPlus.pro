@@ -29,21 +29,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        dialogdecompiler.cpp \
         main.cpp \
         mainwindow.cpp \
         treeitem.cpp \
         treemodel.cpp
 
 HEADERS += \
+        Disassembly.h \
         PE.h \
-        include/Disassembly.h \
-        include/add.h \
+        dialogdecompiler.h \
         mainwindow.h \
         pch.h \
         treeitem.h \
         treemodel.h
 
 FORMS += \
+        dialogdecompiler.ui \
         mainwindow.ui
 
 # Default rules for deployment.
@@ -51,5 +53,11 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+RESOURCES += \
+    logo.qrc
 
 
+
+
+LIBS += $$PWD/capstone_static_x86.lib
+#LIBS += $$PWD/capstone_static_x64.lib

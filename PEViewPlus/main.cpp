@@ -10,9 +10,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow   w;
     DWORD pid = GetCurrentProcessId();
-    cout << "Process pid is "<<pid;
-
-
+    cout << "Process pid is " << pid;
+    w.setWindowTitle("PEViewPlus");
     w.show();
     return a.exec();
 }

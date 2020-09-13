@@ -24,7 +24,22 @@ SOURCES += \
     treemodel.cpp
 
 HEADERS += \
+    Disassembly.h \
     PE.h \
+    capstone/arm.h \
+    capstone/arm64.h \
+    capstone/capstone.h \
+    capstone/evm.h \
+    capstone/m680x.h \
+    capstone/m68k.h \
+    capstone/mips.h \
+    capstone/platform.h \
+    capstone/ppc.h \
+    capstone/sparc.h \
+    capstone/systemz.h \
+    capstone/tms320c64x.h \
+    capstone/x86.h \
+    capstone/xcore.h \
     mainwindow.h \
     pch.h \
     treeitem.h \
@@ -37,3 +52,5 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+LIBS += $$PWD/capstone_static_x86.lib
