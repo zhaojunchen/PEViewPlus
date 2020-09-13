@@ -2,7 +2,7 @@
 #include "treeitem.h"
 #include "ui_mainwindow.h"
 #include "Disassembly.h"
-
+#include "PeInject.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -48,23 +48,55 @@ void MainWindow::on_actionopen_triggered()
     QString curPath = QDir::currentPath();       // 获取系统当前目录
     QString title = "Please Open .dll or .exe "; // 对话框标题
     QString filter = "PE File(*exe *dll)";       // 文件过滤器
-    MainWindow::file = QFileDialog::getOpenFileName(this, title, curPath, filter);
+
+    this->file = QFileDialog::getOpenFileName(this, title, curPath, filter);
 
     if (MainWindow::file.isEmpty()) {
         return;
     }
 
     // 通过记录上次打开的文件、避免重复打开相同的文件
-    lastFileName = "";
 
     if (lastFileName == file) {
         return;
     } else {
+        // 判断是否是一个有效的win32、win64 PE文件
+        int ret = PE::file_isPE(file);
+
+        if (ret == 0) {
+            QMessageBox::critical(this,
+                                  "File is not a PE type file",
+                                  "Please open a real PE file");
+            return;
+        }
+#ifndef _WIN64
+
+        if (ret == 64) {
+            QMessageBox::critical(this,
+                                  "PE file bits64",
+                                  "File is a 64 bits PE file, Please open it in PEViewPlus64");
+            return;
+        }
+
+#else // ifndef _WIN64
+
+        if (ret == 32) {
+            QMessageBox::critical(this,
+                                  "PE file bits32",
+                                  "File is a 32 bits PE file, Please open it in PEViewPlus32");
+            return;
+        }
+
+#endif // ifndef _WIN64
+
         lastFileName = file;
     }
     cout << file;
 
+
     // file有效，准备打开新的文件
+    // 打开之前判断文件是否是一个有效的32位文件
+
 
     // 打开之前的清理工作
     // 清理PE结构，回收其分配的new
@@ -245,4 +277,65 @@ void MainWindow::on_actionDisassembly_triggered()
 void MainWindow::on_actionAboutQt_triggered()
 {
     QMessageBox::aboutQt(this);
+}
+
+void MainWindow::on_actionFont_triggered()
+{
+    // 弹出打开文件对话框
+    QString curPath = QDir::currentPath();       // 获取系统当前目录
+    QString title = "Please Open .dll or .exe "; // 对话框标题
+    QString filter = "PE File(*exe *dll)";       // 文件过滤器
+    QString orinalFile =
+        QFileDialog::getOpenFileName(this, title, curPath, filter);
+
+    if (orinalFile.isNull() || orinalFile.isEmpty()) {
+        QMessageBox::critical(this, "Error", "You should choose a pe file");
+    }
+
+    if (PE::file_isPE(orinalFile) == 0) {
+        QMessageBox::critical(this, "", "This is not a pe file");
+        return;
+    }
+
+    QFileInfo orinalFileInfo(orinalFile);
+
+
+    QString saveFile = QFileDialog::getSaveFileName(this,
+                                                    "choose saved file",
+                                                    orinalFileInfo.path(),
+                                                    filter);
+
+
+    if (!saveFile.isEmpty()) {
+        if (saveFile == orinalFile) {
+            QMessageBox::critical(this, "",
+                                  "Please create a another file to save");
+            return;
+        } else {
+            QFileInfo info(saveFile);
+
+            if (info.isFile()) {
+                QMessageBox::critical(this,
+                                      "",
+                                      "Please choose an another not exists file to save");
+                return;
+            }
+        }
+        int ret = inject(orinalFile, saveFile);
+
+        if (ret == 0) {
+            QMessageBox::information(this, "Success", "PE file inject success");
+        } else {
+            QMessageBox::information(this,
+                                     "Oh my god",
+                                     "PE file inject failed, Some error occur!!!");
+        }
+    } else {
+        QMessageBox::warning(this,
+                             "",
+                             "You should choose a file name to save this content");
+        return;
+    }
+
+    //    打开文件
 }

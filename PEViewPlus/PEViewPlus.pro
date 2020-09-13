@@ -38,6 +38,7 @@ SOURCES += \
 HEADERS += \
         Disassembly.h \
         PE.h \
+        PeInject.h \
         dialogdecompiler.h \
         mainwindow.h \
         pch.h \
@@ -59,5 +60,5 @@ RESOURCES += \
 
 
 
-LIBS += $$PWD/capstone_static_x86.lib
-#LIBS += $$PWD/capstone_static_x64.lib
+#LIBS += $$PWD/capstone_static_x86.lib
+LIBS += $$PWD/capstone_static_x64.lib

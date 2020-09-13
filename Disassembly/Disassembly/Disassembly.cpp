@@ -110,11 +110,20 @@ unsigned char code_32[72] = {
 
 int main() {
 #ifndef _WIN64
-	int s = code_prefixsize((unsigned char*)code_32);
+	//int s = code_prefixsize((unsigned char*)code_32);
+	//cout << s << endl;
+	//string s1 = code_disassembly((unsigned char*)code_32, 72);
+	//cout << s1;
+	int s = code_prefixsize((unsigned char*)code_64);
 	cout << s << endl;
-	string s1 = code_disassembly((unsigned char*)code_32, 72);
+	string s1 = code_disassembly((unsigned char*)code_64, 85);
 	cout << s1;
+
 #else
+	//int s = code_prefixsize((unsigned char*)code_32);
+	//cout << s << endl;
+	//string s1 = code_disassembly((unsigned char*)code_32, 72);
+	//cout << s1;
 	int s = code_prefixsize((unsigned char*)code_64);
 	cout << s << endl;
 	string s1 = code_disassembly((unsigned char*)code_64, 85);

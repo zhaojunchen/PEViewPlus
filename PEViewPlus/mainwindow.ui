@@ -67,7 +67,7 @@
    </widget>
    <widget class="QMenu" name="menuOption">
     <property name="title">
-     <string>Option</string>
+     <string>Action</string>
     </property>
     <addaction name="actionFont"/>
    </widget>
@@ -132,7 +132,7 @@
   </action>
   <action name="actionFont">
    <property name="text">
-    <string>Fonts</string>
+    <string>PEInject</string>
    </property>
   </action>
   <action name="actionDisassembly">

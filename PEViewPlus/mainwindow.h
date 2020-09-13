@@ -35,6 +35,8 @@ private slots:
 
     void on_actionAboutQt_triggered();
 
+    void on_actionFont_triggered();
+
 private:
 
     Ui::MainWindow *ui = nullptr;

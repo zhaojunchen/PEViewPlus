@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+
 class Node {
 public:
 
@@ -56,7 +57,7 @@ public:
 
     ~PE() {
         // 删除文件堆空间
-        delete content;
+        delete[]content;
 
         // 删除node节点堆空间
         for (auto it:this->nodes) {
@@ -103,16 +104,7 @@ public:
         in.read(reinterpret_cast<char *>(file_content), file_size);
         in.close();
         this->content = file_content;
-        bool ispe32 = isPE32(content);
-        bool ispe64 = isPE64(content);
 
-        if (!ispe32 && !ispe64) {
-            perror("文件类型错误");
-        }
-
-        if (ispe64) {
-            perror("文件打开方式错误 64位pe文件,请使用32位打开");
-        }
         startVA = 0;
 
         // DOS HEADER
@@ -1210,9 +1202,12 @@ public:
         const static int fix_head = 8;
         const static unordered_map<WORD,
                                    QString> desc =
-        {   { 0,  "  IMAGE_REL_BASE_ABSOLUTE"                      },
-            { 3,  "  IMAGE_REL_BASE_HIGHLOW"                       },
-            { 10, "  IMAGE_REL_BASE_DIR64"                         } };
+        {   { 0,
+            "  IMAGE_REL_BASE_ABSOLUTE"                                    },
+            { 3,
+              "  IMAGE_REL_BASE_HIGHLOW"                                     },
+            { 10,
+              "  IMAGE_REL_BASE_DIR64"                                     } };
         DWORD IDR_RVA_BAKE;
         DWORD base;
 
@@ -1624,47 +1619,46 @@ public:
         } else {}
     }
 
-    static bool isPE32(const us *content) {
-        PIMAGE_DOS_HEADER pDH = NULL;
-        PIMAGE_NT_HEADERS pNtH = NULL;
+    static int isPE(PVOID file_content) {
+        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)(file_content);
 
-        if (!content) return FALSE;
+        // 计算PE头位置  PIMAGE_NT_HEADERS在64位下等价于PIMAGE_NT_HEADERS64
+        PIMAGE_NT_HEADERS pNTHeader =
+            (PIMAGE_NT_HEADERS)((char *)file_content + pDosHeader->e_lfanew);
 
-        /* DOS 数据结构解析！*/
-        pDH = (PIMAGE_DOS_HEADER)content;
+        if ((pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) &&
+            (pNTHeader->Signature != IMAGE_NT_SIGNATURE)) {
+            return 0;
+        }
 
-        if (pDH->e_magic != IMAGE_DOS_SIGNATURE) return FALSE;
+        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+            // printf("64\n");
+            return 64;
 
-        pNtH = (PIMAGE_NT_HEADERS32)((DWORD)pDH + pDH->e_lfanew);
+        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+            // printf("32\n");
+            return 32;
 
-        if (pNtH->Signature != IMAGE_NT_SIGNATURE) return FALSE;
-
-        if (pNtH->OptionalHeader.Magic ==
-            IMAGE_NT_OPTIONAL_HDR32_MAGIC) return TRUE;
-
-        return FALSE;
+        return 0;
     }
 
-    static bool isPE64(const us *content) {
-        PIMAGE_DOS_HEADER   pDH = NULL;
-        PIMAGE_NT_HEADERS64 pNtH = NULL;
+    static int file_isPE(const QString& file) {
+        ifstream in (file.toStdString(), ios::binary);
 
-        if (!content) return FALSE;
-
-        /* DOS 数据结构解析！*/
-        pDH = (PIMAGE_DOS_HEADER)content;
-
-        if (pDH->e_magic != IMAGE_DOS_SIGNATURE) return FALSE;
-
-        pNtH = (PIMAGE_NT_HEADERS64)((DWORD)pDH + pDH->e_lfanew);
-
-        if (pNtH->Signature != IMAGE_NT_SIGNATURE) {
-            return FALSE;
+        if (!in) {
+            perror("file open error");
+            exit(-1);
         }
+        in.seekg(0, in.end);
+        auto file_size = in.tellg();
+        in.seekg(0, in.beg); // 定位到文件开始
+        us *file_content = new us[file_size];
+        memset(file_content, 0, file_size);
+        in.read(reinterpret_cast<char *>(file_content), file_size);
+        in.close();
 
-        if (pNtH->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-            return TRUE;
-        }
-        return FALSE;
+        int ret = PE::isPE(file_content);
+        delete[]file_content;
+        return ret;
     }
 };
