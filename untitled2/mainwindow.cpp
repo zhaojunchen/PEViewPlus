@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //    QString filePath = "C:\\Users\\zjc98\\Desktop\\leetcode32R.exe";
 
-    QString filePath = "C:\\Users\\zjc98\\Desktop\\twain_32.dll";
+    QString filePath = "C:\\Users\\91441\\Desktop\\PEview.exe";
     pe = new PE(filePath);
     auto node = pe->nodes[0];
     QStandardItem *p;
