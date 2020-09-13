@@ -4,6 +4,7 @@
 #include "Disassembly.h"
 #include "PeInject.h"
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -145,7 +146,7 @@ void MainWindow::on_actionopen_triggered()
         tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
     }
 
-    treeModel = new TreeModel(pe->treeList);
+    treeModel = new TreeModel(pe->getPeTreeList());
     ui->treeView->setModel(treeModel);
 
     //    自动展开 treeView
@@ -252,24 +253,28 @@ void MainWindow::on_actionDisassembly_triggered()
 {
     if (pe == nullptr) return;
 
-    auto sizeOfCode = pe->nt_header->OptionalHeader.SizeOfCode; // 实际代码
-    auto baseOfCode = pe->nt_header->OptionalHeader.BaseOfCode; // RVA
-    auto RVA = baseOfCode;
-    auto p = pe->section_header;
+    /*auto sizeOfCode = pe->nt_header->OptionalHeader.SizeOfCode; // 实际代码
+       auto baseOfCode = pe->nt_header->OptionalHeader.BaseOfCode; // RVA
+       auto RVA = baseOfCode;
+       auto p = pe->section_header;
 
-    for (int i = 0; i < pe->nt_header->FileHeader.NumberOfSections; i++) {
+       for (int i = 0; i < pe->nt_header->FileHeader.NumberOfSections; i++) {
         if ((RVA >= p->VirtualAddress) &&
             (RVA < (p->VirtualAddress + p->SizeOfRawData))) {
             break;
         }
         p++;
-    }
-    auto dis = p->VirtualAddress - p->PointerToRawData;
-    auto file_offset = baseOfCode - dis;
+       }
+       auto dis = p->VirtualAddress - p->PointerToRawData;
+       auto file_offset = baseOfCode - dis;
 
-    auto disas =
-        code_disassembly((us *)(pe->content + file_offset), sizeOfCode, 0);
+       auto disas =
+        code_disassembly((us *)(pe->content + file_offset), sizeOfCode, 0);*/
+    QByteArray codeBlock = pe->getCodeBlock();
+
+    auto disas = code_disassembly((us *)codeBlock.data(), codeBlock.size(), 0);
     dialogDecompiler = new DialogDecompiler(this, disas);
+
     dialogDecompiler->setModal(true);
     dialogDecompiler->show();
 }
@@ -338,4 +343,13 @@ void MainWindow::on_actionFont_triggered()
     }
 
     //    打开文件
+}
+
+void MainWindow::on_actionPEInfo_triggered()
+{
+    //    if (pe == nullptr) return;
+
+    ////    dialogDecompiler = new DialogDecompiler(this, peinfo(this->file));
+    //    dialogDecompiler->setModal(true);
+    //    dialogDecompiler->show();
 }

@@ -1,3 +1,4 @@
+#pragma once
 # ifdef __cplusplus
 extern "C" {
 # endif
@@ -22,7 +23,6 @@ extern "C" {
 
     //QString inject(char oldFile[50], char newFile[50] = "C:/Users/ls/Desktop/inject_out.exe");//改一下路径
 
-    QString pError(int num);
 
 # ifdef __cplusplus
 }
@@ -380,15 +380,6 @@ int PEInject_64(PVOID FileAddress, PDWORD FileLength, PCHAR FilePath) {
     memcpy(shell, cmd_2, 14);
 
     return ret;
-}
-QString pError(int num) {
-    QString tmp;
-    if (num == 0) {
-        tmp = "Inject success!";
-    } else {
-        tmp = "Inject failed!";
-    }
-    return tmp;
 }
 
 //QString inject(char oldFile[50], char newFile[50] = "C:/Users/ls/Desktop/inject_out.exe")

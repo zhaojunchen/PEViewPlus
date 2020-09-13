@@ -1,5 +1,4 @@
 #pragma once
-#include "pch.h"
 
 class Node {
 public:
@@ -36,24 +35,14 @@ inline void judge(Node *node) {
 class PE {
 public:
 
-    QString file_name;
-    size_t file_size;
-    const us *content;
     QVector<Node *>nodes;
-    QStringList treeList;
-    int startVA = 0;
-    int index_section_rdata; // rdata拥有IAT和INT 需要记住相应的位置
-    int index_reloc_table;
-    int index_sectionEAT;
+    PE(QString _file) : file_name(_file) {
+        // 文件初始化
+        init(file_name);
 
-    PIMAGE_DOS_HEADER dos_header;
-
-    // size is sizeof(IMAGE_DOS_HEADER)
-    // DosStud  is start at dos_header+sizeof(IMAGE_DOS_HEADER) size is
-    // (dos_header->e_lfanew-sizeof(IMAGE_DOS_HEADER))
-    PIMAGE_NT_HEADERS32 nt_header; // (PIMAGE_NT_HEADERS32)((char*)dos_header+(dos_header->e_lfanew))
-    PIMAGE_DATA_DIRECTORY data_directory;
-    PIMAGE_SECTION_HEADER section_header;
+        // 构造初始化
+        init_pe_allnodes();
+    }
 
     ~PE() {
         // 删除文件堆空间
@@ -66,6 +55,106 @@ public:
         nodes.clear();
     }
 
+    Node* getNode(int index) {
+        return nodes[index];
+    }
+
+    QStringList getPeTreeList() {
+        return treeList;
+    }
+
+    QByteArray getContent() {
+        QByteArray ret((char *)this->content, this->file_size);
+
+        return ret;
+    }
+
+    // 代码块
+    QByteArray getCodeBlock() {
+        auto sizeOfCode = this->nt_header->OptionalHeader.SizeOfCode; // 实际代码
+        auto baseOfCode = this->nt_header->OptionalHeader.BaseOfCode; // RVA
+        auto RVA = baseOfCode;
+        auto p = this->section_header;
+
+        for (int i = 0; i < this->nt_header->FileHeader.NumberOfSections; i++) {
+            if ((RVA >= p->VirtualAddress) &&
+                (RVA < (p->VirtualAddress + p->SizeOfRawData))) {
+                break;
+            }
+            p++;
+        }
+        auto dis = p->VirtualAddress - p->PointerToRawData;
+        auto file_offset = baseOfCode - dis;
+        QByteArray codeBlock(((char *)this->content) + file_offset, sizeOfCode);
+        return codeBlock;
+    }
+
+    static int isPE(PVOID file_content) {
+        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)(file_content);
+
+        // 计算PE头位置  PIMAGE_NT_HEADERS在64位下等价于PIMAGE_NT_HEADERS64
+        PIMAGE_NT_HEADERS pNTHeader =
+            (PIMAGE_NT_HEADERS)((char *)file_content + pDosHeader->e_lfanew);
+
+        if ((pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) &&
+            (pNTHeader->Signature != IMAGE_NT_SIGNATURE)) {
+            return 0;
+        }
+
+        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+            // printf("64\n");
+            return 64;
+
+        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+            // printf("32\n");
+            return 32;
+
+        return 0;
+    }
+
+    static int file_isPE(const QString& file) {
+        ifstream in (file.toStdString(), ios::binary);
+
+        if (!in) {
+            perror("file open error");
+            exit(-1);
+        }
+        in.seekg(0, in.end);
+        auto file_size = in.tellg();
+        in.seekg(0, in.beg); // 定位到文件开始
+        us *file_content = new us[file_size];
+        memset(file_content, 0, file_size);
+        in.read(reinterpret_cast<char *>(file_content), file_size);
+        in.close();
+
+        int ret = PE::isPE(file_content);
+        delete[]file_content;
+        return ret;
+    }
+
+private:
+
+    QString file_name;
+    size_t file_size;
+    QStringList treeList;
+    const us *content;
+    int index_section_rdata; // rdata拥有IAT和INT 需要记住相应的位置
+    int index_reloc_table;
+    int index_sectionEAT;
+
+
+    int startVA = 0;
+
+    PIMAGE_DOS_HEADER dos_header;
+
+    // size is sizeof(IMAGE_DOS_HEADER)
+    // DosStud  is start at dos_header+sizeof(IMAGE_DOS_HEADER) size is
+    // (dos_header->e_lfanew-sizeof(IMAGE_DOS_HEADER))
+    PIMAGE_NT_HEADERS32 nt_header; // (PIMAGE_NT_HEADERS32)((char*)dos_header+(dos_header->e_lfanew))
+    PIMAGE_DATA_DIRECTORY data_directory;
+    PIMAGE_SECTION_HEADER section_header;
+
+
     template<typename T>
     QString mapToValue(const unordered_map<T, QString>& mp, const T& target) {
         auto it = mp.find(target);
@@ -75,14 +164,6 @@ public:
         } else {
             return Unknown;
         }
-    }
-
-    PE(QString _file) : file_name(_file) {
-        // 文件初始化
-        init(file_name);
-
-        // 构造初始化
-        init_pe_allnodes();
     }
 
     // 使用pe文件 初始化PE类及其成员变量
@@ -104,27 +185,6 @@ public:
         in.read(reinterpret_cast<char *>(file_content), file_size);
         in.close();
         this->content = file_content;
-
-        startVA = 0;
-
-        // DOS HEADER
-        dos_header = (PIMAGE_DOS_HEADER)content;
-
-        // NT  HEADER
-        nt_header =
-            (PIMAGE_NT_HEADERS32)((char *)dos_header + (dos_header->e_lfanew));
-
-        // nt_header->Signature;
-        // nt_header->FileHeader
-        // nt_header->OptionalHeader;
-
-        auto size_nt_header = sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
-                              nt_header->FileHeader.SizeOfOptionalHeader;
-
-        // auto numberOfSection = nt_header->FileHeader.NumberOfSections;
-        data_directory = nt_header->OptionalHeader.DataDirectory;
-        section_header =
-            (PIMAGE_SECTION_HEADER)((char *)nt_header + size_nt_header);
     }
 
     // 地址的偏移暂时实现VA和RVA_offset的显示
@@ -1433,6 +1493,46 @@ public:
     }
 
     void init_pe_allnodes() {
+        // 修改content之后、使用init_pe_allnodes即可修改所有的节点
+        // 此时显然所有的节点已经实现初始化、刷新之前需要干掉前面的废物节点
+        if (nodes.size() != 0) {
+            for (auto it:nodes) {
+                delete it;
+            }
+            nodes.clear(); // 清空节点组
+        }
+
+        // 判断文件是否是有效的PE文件
+        if (PE::isPE((us *)content) == 0) {
+            QMessageBox::critical(nullptr, "", "File content is not a pe");
+            return;
+        }
+
+        // 通过content赋值、及其初始化赋值
+
+
+        startVA = 0;
+
+        // DOS HEADER
+        dos_header = (PIMAGE_DOS_HEADER)content;
+
+        // NT  HEADER
+        nt_header =
+            (PIMAGE_NT_HEADERS32)((char *)dos_header + (dos_header->e_lfanew));
+
+        // nt_header->Signature;
+        // nt_header->FileHeader
+        // nt_header->OptionalHeader;
+
+        auto size_nt_header = sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
+                              nt_header->FileHeader.SizeOfOptionalHeader;
+
+        // auto numberOfSection = nt_header->FileHeader.NumberOfSections;
+        data_directory = nt_header->OptionalHeader.DataDirectory;
+        section_header =
+            (PIMAGE_SECTION_HEADER)((char *)nt_header + size_nt_header);
+
+
         // rdata拥有IAT和INT 需要记住相应的位置
         this->index_section_rdata = -1;
         this->index_reloc_table = -1;
@@ -1617,48 +1717,5 @@ public:
         if (f) {
             f.write((char *)content, file_size);
         } else {}
-    }
-
-    static int isPE(PVOID file_content) {
-        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)(file_content);
-
-        // 计算PE头位置  PIMAGE_NT_HEADERS在64位下等价于PIMAGE_NT_HEADERS64
-        PIMAGE_NT_HEADERS pNTHeader =
-            (PIMAGE_NT_HEADERS)((char *)file_content + pDosHeader->e_lfanew);
-
-        if ((pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) &&
-            (pNTHeader->Signature != IMAGE_NT_SIGNATURE)) {
-            return 0;
-        }
-
-        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-            // printf("64\n");
-            return 64;
-
-        if (pNTHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
-            // printf("32\n");
-            return 32;
-
-        return 0;
-    }
-
-    static int file_isPE(const QString& file) {
-        ifstream in (file.toStdString(), ios::binary);
-
-        if (!in) {
-            perror("file open error");
-            exit(-1);
-        }
-        in.seekg(0, in.end);
-        auto file_size = in.tellg();
-        in.seekg(0, in.beg); // 定位到文件开始
-        us *file_content = new us[file_size];
-        memset(file_content, 0, file_size);
-        in.read(reinterpret_cast<char *>(file_content), file_size);
-        in.close();
-
-        int ret = PE::isPE(file_content);
-        delete[]file_content;
-        return ret;
     }
 };

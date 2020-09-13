@@ -58,7 +58,5 @@ RESOURCES += \
     logo.qrc
 
 
-
-
-#LIBS += $$PWD/capstone_static_x86.lib
-LIBS += $$PWD/capstone_static_x64.lib
+LIBS += $$PWD/capstone_static_x86.lib
+#LIBS += $$PWD/capstone_static_x64.lib

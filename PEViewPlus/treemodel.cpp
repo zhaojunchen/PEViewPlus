@@ -58,7 +58,6 @@
 #include "treemodel.h"
 #include "treeitem.h"
 
-#include <QStringList>
 #include "PE.h"
 
 // ! [0]

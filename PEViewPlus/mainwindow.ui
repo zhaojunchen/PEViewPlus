@@ -70,6 +70,7 @@
      <string>Action</string>
     </property>
     <addaction name="actionFont"/>
+    <addaction name="actionPEInfo"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -143,6 +144,11 @@
   <action name="actionAboutQt">
    <property name="text">
     <string>AboutQt</string>
+   </property>
+  </action>
+  <action name="actionPEInfo">
+   <property name="text">
+    <string>PEInfo</string>
    </property>
   </action>
  </widget>
