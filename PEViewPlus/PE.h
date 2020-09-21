@@ -131,6 +131,91 @@ public:
         delete[]file_content;
         return ret;
     }
+    PIMAGE_DATA_DIRECTORY data_directory;
+
+    //sfy:修改IMAGEBASE并保存文件
+    bool changeImageBase(int32_t newImageBase)const{
+        auto* newPe = new PE(this->file_name);
+        std::vector<int32_t> relocAddrs;
+
+        //存在重定位表，查找需要重定位的数据
+        if(index_reloc_table!=0){
+            auto* pRelocSection = section_header+index_reloc_table;
+            auto RVAOffset = pRelocSection->VirtualAddress - pRelocSection->PointerToRawData;
+            auto RelocTable = data_directory[5];
+            PIMAGE_BASE_RELOCATION pBaseRelocation =
+                (PIMAGE_BASE_RELOCATION)(content + (RelocTable.VirtualAddress - RVAOffset));
+
+            uint32_t size = 0;//已遍历的整个重定位表的大小
+            while(size<RelocTable.Size){
+                uint16_t* pTypeOffset= reinterpret_cast<uint16_t*>(pBaseRelocation) + 4;
+                uint32_t blockSize = 8;//该重定位块中已遍历的大小
+                while(blockSize<pBaseRelocation->SizeOfBlock){
+                    if(*pTypeOffset!=0){
+                        relocAddrs.push_back(this->RVA2RAW(getRelocRVA(pBaseRelocation->VirtualAddress,* pTypeOffset)));
+                    }
+
+                    pTypeOffset++;
+                    blockSize+=2;
+                }
+                size+=pBaseRelocation->SizeOfBlock;
+                pBaseRelocation=reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<uint8_t*>(pBaseRelocation)+pBaseRelocation->SizeOfBlock);
+            }
+        }
+        //修改ImageBase
+        //int32_t ImageBaseOffset = reinterpret_cast<uint8_t*>(&nt_header->OptionalHeader.ImageBase) - content;
+        newPe->nt_header->OptionalHeader.ImageBase = newImageBase;//should not do this
+        //修改重定位数据
+        for(auto i:relocAddrs){
+            auto* pAddr = const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(newPe->content+i));
+            *pAddr += newImageBase-nt_header->OptionalHeader.ImageBase;
+        }
+        //保存文件
+        auto filename = QString("input.exe");
+        newPe->savenFile(filename, newPe->content);
+        return true;
+    }
+
+    bool verifySignature(){
+        auto CertificateTable = data_directory[4];
+        auto* pCertificateTable = new uint8_t[CertificateTable.Size];
+        std::copy(content+CertificateTable.VirtualAddress,content+CertificateTable.VirtualAddress+CertificateTable.Size,pCertificateTable);
+        uthenticode::verify(pCertificateTable, CertificateTable.Size);
+    }
+
+    //sfy:根据重定位表中VirtualAddress和TypeOffset的值计算需要重定位的位置的RVA
+    static uint32_t getRelocRVA(uint32_t virtualAddressBase, uint16_t typeOffset){
+        auto relocType = typeOffset >> 12;
+        switch (relocType)
+        {
+        case 0x0:
+            return 0;
+            break;
+        case 0x3:
+            return virtualAddressBase + (typeOffset & 0xFFF);
+            break;
+        case 0xA:
+            //ToDo
+        default:
+            throw std::runtime_error{ "Invalid relocType" };
+            break;
+        }
+    }
+
+    //sfy:RVA地址转换为RAW地址
+    uint32_t RVA2RAW(uint32_t RVA)const{
+        const auto* pSectionHeader = section_header;
+        for(int i = 0;i<nt_header->FileHeader.NumberOfSections;i++){
+            if(RVA - pSectionHeader->VirtualAddress <= pSectionHeader->SizeOfRawData){
+                return RVA - pSectionHeader->VirtualAddress + pSectionHeader->PointerToRawData;
+            }
+            else{
+                pSectionHeader++;
+            }
+        }
+        //error
+        return -1;
+    }
 
 private:
 
@@ -151,7 +236,7 @@ private:
     // DosStud  is start at dos_header+sizeof(IMAGE_DOS_HEADER) size is
     // (dos_header->e_lfanew-sizeof(IMAGE_DOS_HEADER))
     PIMAGE_NT_HEADERS32 nt_header; // (PIMAGE_NT_HEADERS32)((char*)dos_header+(dos_header->e_lfanew))
-    PIMAGE_DATA_DIRECTORY data_directory;
+
     PIMAGE_SECTION_HEADER section_header;
 
 
@@ -1712,8 +1797,8 @@ private:
         }
     }
 
-    void savenFile(QString& file, us *content) {
-        ofstream f(file.toStdString(), ios::binary);
+    void savenFile(QString& file,const us *content) {
+        ofstream f(file.toStdString(), ios::binary | ios::trunc);
 
         if (f) {
             f.write((char *)content, file_size);

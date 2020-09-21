@@ -26,14 +26,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11
+CONFIG += c++17
 
 SOURCES += \
         dialogdecompiler.cpp \
         main.cpp \
         mainwindow.cpp \
         treeitem.cpp \
-        treemodel.cpp
+        treemodel.cpp \
+        uthenticode.cpp
 
 HEADERS += \
         Disassembly.h \
@@ -42,8 +43,10 @@ HEADERS += \
         dialogdecompiler.h \
         mainwindow.h \
         pch.h \
+        reloc.h \
         treeitem.h \
-        treemodel.h
+        treemodel.h \
+        uthenticode.h
 
 FORMS += \
         dialogdecompiler.ui \
@@ -58,5 +61,12 @@ RESOURCES += \
     logo.qrc
 
 
-LIBS += $$PWD/capstone_static_x86.lib
-#LIBS += $$PWD/capstone_static_x64.lib
+LIBS += $$PWD/lib/capstone/capstone_static_x86.lib
+#LIBS += $$PWD/capstone/capstone_static_x64.lib
+LIBS += $$PWD/lib/openssl/openssl.lib
+LIBS += $$PWD/lib/openssl/libcrypto_static.lib
+LIBS += $$PWD/lib/windows/WS2_32.lib
+LIBS += $$PWD/lib/windows/User32.lib
+LIBS += $$PWD/lib/windows/AdvAPI32.lib
+INCLUDEPATH += $$PWD/include/
+
