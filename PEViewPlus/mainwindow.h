@@ -39,6 +39,8 @@ private slots:
 
     void on_actionPEInfo_triggered();
 
+    void on_actionSignature_triggered();
+
 private:
 
     Ui::MainWindow *ui = nullptr;

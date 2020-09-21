@@ -37,22 +37,23 @@ static void show(Node *node) {
 
     if (node->hasDesc) {
         cout << node->addr.size() << "\t" << node->data.size() << "\t" <<
-        node->desc.size() << "\t" << node->value.size();
+            node->desc.size() << "\t" << node->value.size();
 
         for (int i = 0; i < node->addr.size(); i++) {
             cout << node->addr[i] << "\t" << node->data[i] << "\t" <<
-            node->desc[i] << "\t" << node->value[i];
+                node->desc[i] << "\t" << node->value[i];
         }
     } else {
         cout << node->addr.size() << "\t" << node->data.size() << "\t" <<
-        node->value.size();
+            node->value.size();
 
         for (int i = 0; i < node->addr.size(); i++) {
             cout << node->addr[i] << "\t" << node->data[i] << "\t" <<
-            node->value[i];
+                node->value[i];
         }
     }
 }
+
 #ifndef _WIN64
 
 class PE {
@@ -154,8 +155,6 @@ public:
         delete[]file_content;
         return ret;
     }
-
-    PIMAGE_DATA_DIRECTORY data_directory;
 
     // sfy:修改IMAGEBASE并保存文件
     bool changeImageBase(int32_t newImageBase)const {
@@ -301,7 +300,7 @@ private:
     PIMAGE_NT_HEADERS32 nt_header; // (PIMAGE_NT_HEADERS32)((char*)dos_header+(dos_header->e_lfanew))
 
     PIMAGE_SECTION_HEADER section_header;
-
+    PIMAGE_DATA_DIRECTORY data_directory;
 
     template<typename T>
     QString mapToValue(const unordered_map<T, QString>& mp, const T& target) {
@@ -1951,7 +1950,7 @@ public:
     }
 
     static int file_isPE(const QString& file) {
-        ifstream in(file.toStdString(), ios::binary);
+        ifstream in (file.toStdString(), ios::binary);
 
         if (!in) {
             perror("file open error");
@@ -1970,7 +1969,7 @@ public:
         return ret;
     }
 
-    //private:
+    // private:
 
     QString file_name;
     size_t file_size;
@@ -2006,7 +2005,7 @@ public:
     void init(const QString& _file) {
         const string file = _file.toStdString();
 
-        ifstream in(file, ios::binary);
+        ifstream in (file, ios::binary);
 
         if (!in) {
             perror("file open error");
@@ -2085,7 +2084,7 @@ public:
 
         node->desc = desc;
         Q_ASSERT(node->desc.size() == 31);
-        QVector<DWORD> it_size;
+        QVector<DWORD>   it_size;
         QVector<DWORD64> it_value;
         int RVA = startVA;
         it_size.reserve(31);
@@ -2207,7 +2206,9 @@ public:
         while (dis--) {
             node->value.push_back("");
         }
-        // add it for assert judge when debug, and it can help you find you bug quickly
+
+        // add it for assert judge when debug, and it can help you find you bug
+        // quickly
         judge(node);
         return node;
     }
@@ -2226,7 +2227,7 @@ public:
     Node* init_nt_header(int startVA = 0) {
         Node *node = new Node("IMAGE_NT_HEADERS", false, false);
         auto  size_nt_header = sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
-            nt_header->FileHeader.SizeOfOptionalHeader;
+                               nt_header->FileHeader.SizeOfOptionalHeader;
 
         auto raw_offset = dos_header->e_lfanew;
         auto raw_size = size_nt_header;
@@ -2243,7 +2244,7 @@ public:
 
         node->addr.push_back(Addr(RVA));
         node->data.push_back(Addr(nt_header->Signature,
-            sizeof(nt_header->Signature)));
+                                  sizeof(nt_header->Signature)));
         node->desc.push_back("Signature");
         node->value.push_back("IMAGE_NT_HEADER_SIGNATURE");
         return node;
@@ -2310,8 +2311,8 @@ public:
 
         // 设置 Machine字段
         const static unordered_map<WORD,
-            QString> mp_Machine =
-        { { 0,
+                                   QString> mp_Machine =
+        {   { 0,
             "IMAGE_FILE_MACHINE_UNKNOWN"                                   },
             { 0x0001,
               "IMAGE_FILE_MACHINE_TARGET_HOST"                                },
@@ -2386,8 +2387,8 @@ public:
         // 设置value的Machine type的值
 
         const static unordered_map<WORD,
-            QString> mp_Characteristics =
-        { { 0x0001, "IMAGE_FILE_RELOCS_STRIPPED"         },
+                                   QString> mp_Characteristics =
+        {   { 0x0001, "IMAGE_FILE_RELOCS_STRIPPED"         },
             { 0x0002, "IMAGE_FILE_EXECUTABLE_IMAGE"        },
             { 0x0004, "IMAGE_FILE_LINE_NUMS_STRIPPED"      },
             { 0x0008, "IMAGE_FILE_LOCAL_SYMS_STRIPPED"     },
@@ -2429,8 +2430,9 @@ public:
         Node *node = new Node("IMAGE_OPTIONAL_HEADER", true, true);
         auto  header = &nt_header->OptionalHeader;
         int   N = 23; // Magic to CheckSum
-        QVector<DWORD> it_size;
+        QVector<DWORD>   it_size;
         QVector<DWORD64> it_value;
+
         it_size.reserve(N);
         it_value.reserve(N);
 
@@ -2533,7 +2535,7 @@ public:
         it_value.push_back(it22);
 
         int RVA = dos_header->e_lfanew + sizeof(nt_header->Signature) +
-            sizeof(nt_header->FileHeader) + startVA;
+                  sizeof(nt_header->FileHeader) + startVA;
 
         for (int i = 0; i < N; i++) {
             node->addr.push_back(Addr(RVA));
@@ -2543,10 +2545,10 @@ public:
 
         // value对齐：
         const static unordered_map<WORD,
-            QString> mp_Magic = {
-                { 0x10b, "IMAGE_NT_OPTIONAL_HDR32_MAGIC" },
-                { 0x20b, "IMAGE_NT_OPTIONAL_HDR64_MAGIC" },
-                { 0x107, "IMAGE_ROM_OPTIONAL_HDR_MAGIC"  }
+                                   QString> mp_Magic = {
+            { 0x10b, "IMAGE_NT_OPTIONAL_HDR32_MAGIC" },
+            { 0x20b, "IMAGE_NT_OPTIONAL_HDR64_MAGIC" },
+            { 0x107, "IMAGE_ROM_OPTIONAL_HDR_MAGIC"  }
         };
         node->value.push_back(mapToValue(mp_Magic, header->Magic));
 
@@ -2554,39 +2556,39 @@ public:
             node->value.push_back("");
         }
         const static unordered_map<WORD,
-            QString> mp_Subsystem =
-        { { 0,
-            "IMAGE_SUBSYSTEM_UNKNOWN"},
+                                   QString> mp_Subsystem =
+        {   { 0,
+            "IMAGE_SUBSYSTEM_UNKNOWN" },
             { 1,
-              "IMAGE_SUBSYSTEM_NATIVE"},
+              "IMAGE_SUBSYSTEM_NATIVE" },
             { 2,
-              "IMAGE_SUBSYSTEM_WINDOWS_GUI"},
+              "IMAGE_SUBSYSTEM_WINDOWS_GUI" },
             { 3,
-              "IMAGE_SUBSYSTEM_WINDOWS_CUI"},
+              "IMAGE_SUBSYSTEM_WINDOWS_CUI" },
             { 5,
-              "IMAGE_SUBSYSTEM_OS2_CUI"},
+              "IMAGE_SUBSYSTEM_OS2_CUI" },
             { 7,
-              "IMAGE_SUBSYSTEM_POSIX_CUI"},
+              "IMAGE_SUBSYSTEM_POSIX_CUI" },
             { 8,
-              "IMAGE_SUBSYSTEM_NATIVE_WINDOWS"},
+              "IMAGE_SUBSYSTEM_NATIVE_WINDOWS" },
             { 9,
-              "IMAGE_SUBSYSTEM_WINDOWS_CE_GUI"},
+              "IMAGE_SUBSYSTEM_WINDOWS_CE_GUI" },
             { 10,
-              "IMAGE_SUBSYSTEM_EFI_APPLICATION"},
+              "IMAGE_SUBSYSTEM_EFI_APPLICATION" },
             { 11,
-              "IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER"},
+              "IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER" },
             { 12,
-              "IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER"},
+              "IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER" },
             { 13,
-              "IMAGE_SUBSYSTEM_EFI_ROM"},
+              "IMAGE_SUBSYSTEM_EFI_ROM" },
             { 14,
-              "IMAGE_SUBSYSTEM_XBOX"},
+              "IMAGE_SUBSYSTEM_XBOX" },
             { 16,
-              "IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION"},
+              "IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION" },
             { 17,
-              "IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG"} };
+              "IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG" } };
         node->value.push_back(mapToValue(mp_Subsystem,
-            header->Subsystem));
+                                         header->Subsystem));
         node->value.push_back("DLL characters as follows");
 
         const static unordered_map<WORD, QString> mp_DllCharacteristics{
@@ -2731,7 +2733,7 @@ public:
 
     // 辅助 init_section_header
     void init_section_header_1(int RVA, Node *node,
-        PIMAGE_SECTION_HEADER header) {
+                               PIMAGE_SECTION_HEADER header) {
         RVA += startVA;
 
         // 设置Name
@@ -3077,8 +3079,8 @@ public:
         WORD *type;
         const static int fix_head = 8;
         const static unordered_map<WORD,
-            QString> desc =
-        { { 0,
+                                   QString> desc =
+        {   { 0,
             "  IMAGE_REL_BASE_ABSOLUTE"                                    },
             { 3,
               "  IMAGE_REL_BASE_HIGHLOW"                                     },
@@ -3116,8 +3118,8 @@ public:
                 node->data.push_back(Addr(*type, 2));
                 node->desc.push_back("RVA Type");
                 node->value.push_back(Addr(base + type_value_low_12 + startVA,
-                    4) + mapToValue(desc,
-                        type_value_high_4));
+                                           4) + mapToValue(desc,
+                                                           type_value_high_4));
 
                 // cout << Addr(*type, 2);
                 type++;
@@ -3192,7 +3194,7 @@ public:
                                           "AddressOfNameOrdinals" };
 
         QVector<DWORD64> it_value;
-        QVector<DWORD> it_size;
+        QVector<DWORD>   it_size;
 
         it_size.reserve(N);
         it_value.reserve(N);
@@ -3320,7 +3322,7 @@ public:
 
         // 判断文件是否是有效的PE文件
         if (PE::isPE((us *)content) == 0) {
-            //QMessageBox::critical(nullptr, "", "File content is not a pe");
+            // QMessageBox::critical(nullptr, "", "File content is not a pe");
             cout << "File content is not a pe";
             return;
         }
@@ -3341,7 +3343,7 @@ public:
         // nt_header->OptionalHeader;
 
         auto size_nt_header = sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
-            nt_header->FileHeader.SizeOfOptionalHeader;
+                              nt_header->FileHeader.SizeOfOptionalHeader;
 
         // auto numberOfSection = nt_header->FileHeader.NumberOfSections;
         data_directory = nt_header->OptionalHeader.DataDirectory;
@@ -3378,6 +3380,7 @@ public:
 
         // 重定位节
         auto relocTable = this->init_reloc_table();
+
         // 在合适的位置插入节点
         for (int i = 0; i < numberOfSection; i++) {
             nodes.push_back(section[i]);
@@ -3423,10 +3426,10 @@ public:
      * 内存布局的imageBase
      */
     void fillContent(Node *node,
-        int   raw_offset,
-        int   raw_size,
-        int   RVA_offset,
-        int   startVA = 0) {
+                     int   raw_offset,
+                     int   raw_size,
+                     int   RVA_offset,
+                     int   startVA = 0) {
         if (node->hasDesc == true) {
             return;
         }
@@ -3527,12 +3530,135 @@ public:
         }
     }
 
-    void savenFile(QString& file, us *content) {
+    void savenFile(QString& file, const us *content) {
         ofstream f(file.toStdString(), ios::binary);
 
         if (f) {
             f.write((char *)content, file_size);
         } else {}
+    }
+
+    // sfy:修改IMAGEBASE并保存文件
+    bool changeImageBase(int32_t newImageBase)const {
+        auto *newPe = new PE(this->file_name);
+        std::vector<int32_t> relocAddrs;
+
+        // 存在重定位表，查找需要重定位的数据
+        if (index_reloc_table != 0) {
+            auto *pRelocSection = section_header + index_reloc_table;
+            auto  RVAOffset = pRelocSection->VirtualAddress -
+                              pRelocSection->PointerToRawData;
+            auto RelocTable = data_directory[5];
+            PIMAGE_BASE_RELOCATION pBaseRelocation =
+                (PIMAGE_BASE_RELOCATION)(content +
+                                         (RelocTable.VirtualAddress - RVAOffset));
+
+            uint32_t size = 0; // 已遍历的整个重定位表的大小
+
+            while (size < RelocTable.Size) {
+                uint16_t *pTypeOffset =
+                    reinterpret_cast<uint16_t *>(pBaseRelocation) + 4;
+                uint32_t blockSize = 8; // 该重定位块中已遍历的大小
+
+                while (blockSize < pBaseRelocation->SizeOfBlock) {
+                    if (*pTypeOffset != 0) {
+                        relocAddrs.push_back(this->RVA2RAW(getRelocRVA(
+                                                               pBaseRelocation->
+                                                               VirtualAddress,
+                                                               *pTypeOffset)));
+                    }
+
+                    pTypeOffset++;
+                    blockSize += 2;
+                }
+                size += pBaseRelocation->SizeOfBlock;
+                pBaseRelocation =
+                    reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<
+                                                                 uint8_t
+                                                                 *>(
+                                                                 pBaseRelocation)
+                                                             + pBaseRelocation->
+                                                             SizeOfBlock);
+            }
+        }
+
+        // 修改ImageBase
+        // int32_t ImageBaseOffset =
+        // reinterpret_cast<uint8_t*>(&nt_header->OptionalHeader.ImageBase) -
+        // content;
+        newPe->nt_header->OptionalHeader.ImageBase = newImageBase; // should not
+                                                                   // do this
+
+        // 修改重定位数据
+        for (auto i:relocAddrs) {
+            auto *pAddr =
+                const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(newPe->
+                                                                          content
+                                                                          + i));
+            *pAddr += newImageBase - nt_header->OptionalHeader.ImageBase;
+        }
+
+        // 保存文件
+        auto filename = QString("input.exe");
+        newPe->savenFile(filename, newPe->content);
+        delete newPe;
+        return true;
+    }
+
+    bool verifySignature() {
+        auto  CertificateTable = data_directory[4];
+        auto *pCertificateTable = new uint8_t[CertificateTable.Size];
+
+        std::copy(content + CertificateTable.VirtualAddress,
+                  content + CertificateTable.VirtualAddress + CertificateTable.Size,
+                  pCertificateTable);
+        auto ret = uthenticode::verify(pCertificateTable, CertificateTable.Size);
+        return ret;
+    }
+
+    // sfy:根据重定位表中VirtualAddress和TypeOffset的值计算需要重定位的位置的RVA
+    static uint32_t getRelocRVA(uint32_t virtualAddressBase,
+                                uint16_t typeOffset) {
+        auto relocType = typeOffset >> 12;
+
+        switch (relocType)
+        {
+        case 0x0:
+            return 0;
+
+            break;
+
+        case 0x3:
+            return virtualAddressBase + (typeOffset & 0xFFF);
+
+            break;
+
+        case 0xA:
+
+        // ToDo
+        default:
+            throw std::runtime_error{ "Invalid relocType" };
+            break;
+        }
+    }
+
+    // sfy:RVA地址转换为RAW地址
+    uint32_t RVA2RAW(uint32_t RVA)const {
+        const auto *pSectionHeader = section_header;
+
+        for (int i = 0; i < nt_header->FileHeader.NumberOfSections; i++) {
+            if (RVA - pSectionHeader->VirtualAddress <=
+                pSectionHeader->SizeOfRawData) {
+                return RVA - pSectionHeader->VirtualAddress +
+                       pSectionHeader->PointerToRawData;
+            }
+            else {
+                pSectionHeader++;
+            }
+        }
+
+        // error
+        return -1;
     }
 };
 

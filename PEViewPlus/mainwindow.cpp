@@ -294,6 +294,7 @@ void MainWindow::on_actionFont_triggered()
 
     if (orinalFile.isNull() || orinalFile.isEmpty()) {
         QMessageBox::critical(this, "Error", "You should choose a pe file");
+        return;
     }
 
     if (PE::file_isPE(orinalFile) == 0) {
@@ -351,4 +352,18 @@ void MainWindow::on_actionPEInfo_triggered()
     ////    dialogDecompiler = new DialogDecompiler(this, peinfo(this->file));
     //    dialogDecompiler->setModal(true);
     //    dialogDecompiler->show();
+}
+
+void MainWindow::on_actionSignature_triggered()
+{
+    if (pe == nullptr) {
+        return;
+    }
+    auto ret = pe->verifySignature();
+
+    if (ret) {
+        QMessageBox::information(this, "Ok", "The pe file Signature is ok");
+    } else {
+        QMessageBox::critical(this, "failed", "The pe file Signature is error");
+    }
 }

@@ -59,13 +59,16 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     logo.qrc
 
-
-#LIBS += $$PWD/lib/capstone/capstone_static_x86.lib
-LIBS += $$PWD/lib/capstone/capstone_static_x64.lib
-LIBS += $$PWD/lib/openssl/openssl.lib
-LIBS += $$PWD/lib/openssl/libcrypto_static.lib
-LIBS += $$PWD/lib/windows/WS2_32.lib
-LIBS += $$PWD/lib/windows/User32.lib
-LIBS += $$PWD/lib/windows/AdvAPI32.lib
+LIB_VERSION = x64
+DEFINES += LIB_VERSION
 INCLUDEPATH += $$PWD/include/
+INCLUDEPATH += $$PWD/lib/
+
+LIBS += $$PWD/lib/$$LIB_VERSION/openssl/openssl.lib
+LIBS += $$PWD/lib/$$LIB_VERSION/openssl/libcrypto_static.lib
+LIBS += $$PWD/lib/$$LIB_VERSION/windows/WS2_32.lib
+LIBS += $$PWD/lib/$$LIB_VERSION/windows/User32.lib
+LIBS += $$PWD/lib/$$LIB_VERSION/windows/AdvAPI32.lib
+LIBS += $$PWD/lib/$$LIB_VERSION/capstone/capstone_static.lib
+
 

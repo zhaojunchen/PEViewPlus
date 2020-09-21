@@ -3,12 +3,12 @@
 #include <cinttypes>
 #include "capstone/capstone.h"
 #pragma comment(lib, "legacy_stdio_definitions.lib")
-
-#ifndef  _WIN64
-# pragma comment(lib,"capstone_static_x86.lib")
-#else // ifndef  _WIN64
-# pragma comment(lib,"capstone_static_x64.lib")
-#endif // ifndef  _WIN64
+//// LIB_VERSION/capstone/capstone_static.lib
+//#ifndef  _WIN64
+//# pragma comment(lib,"../lib/x86/capstone/capstone_static.lib")
+//#else // ifndef  _WIN64
+//# pragma comment(lib,"../lib/x64/capstone/capstone_static.lib")
+//#endif // ifndef  _WIN64
 
 #if _MSC_VER >= 1900
 # include "stdio.h"
