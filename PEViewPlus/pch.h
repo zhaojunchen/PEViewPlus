@@ -45,6 +45,9 @@
 #include <unordered_set>
 #include <string>
 #include <vector>
+#include <iterator>
+
+#include "uthenticode.h"
 
 #define cout qDebug()
 #define Addr(value, size) QString("  %1  ").arg((value), (size) << 1, 16, \

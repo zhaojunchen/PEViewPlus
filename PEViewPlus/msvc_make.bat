@@ -1,2 +1,2 @@
 chcp 65001
-"C:\Qt\Qt5.14.2\Tools\QtCreator\bin\jom.exe" %*
+"D:\Qt\qt5.9.9\Tools\QtCreator\bin\jom.exe" %*
