@@ -249,12 +249,13 @@ private:
           "File address of new exe header" };
 
         node->desc = desc;
-        Q_ASSERT(node->desc.size() == 31);
+        int N = 31;
+        Q_ASSERT(node->desc.size() == N);
         QVector<int> it_size;
         QVector<int> it_value;
         int RVA = startVA;
-        it_size.reserve(31);
-        it_size.reserve(31);
+        it_size.reserve(N);
+        it_value.reserve(N);
 
         auto it0 = dos_header->e_magic;
         auto it1 = dos_header->e_cblp;
@@ -358,7 +359,7 @@ private:
         node->addr.reserve(31);
         node->data.reserve(31);
 
-        for (int i = 0; i < it_value.size(); i++) {
+        for (int i = 0; i < N; i++) {
             node->addr.push_back(Addr(RVA, 4));
             RVA += it_size[i];
 
