@@ -3,7 +3,6 @@
 #include "ui_mainwindow.h"
 #include "Disassembly.h"
 #include "PeInject.h"
-#include "reloc.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -124,7 +123,6 @@ void MainWindow::on_actionopen_triggered()
 
     // 初始化操作
     pe = new PE(file);
-    Test(pe);
 
     // 优化自己点击自己、造成的TableView刷新开销
     lastClick = 0;

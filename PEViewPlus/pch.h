@@ -50,8 +50,22 @@
 #include "uthenticode.h"
 
 #define cout qDebug()
-#define Addr(value, size) QString("  %1  ").arg((value), (size) << 1, 16, \
-                                                QChar('0')).toUpper()
+
+#ifndef _WIN64
+template<typename T>
+inline QString Addr(T value, int size = 4) {
+    return QString("  %1  ").arg((value), (size) << 1, 16, \
+                                 QChar('0')).toUpper();
+}
+
+#else // ifndef _WIN64
+template<typename T>
+inline QString Addr(T value, int size = 8) {
+    return QString("  %1  ").arg((value), (size) << 1, 16, \
+                                 QChar('0')).toUpper();
+}
+
+#endif // !_WIN64
 
 typedef  unsigned char us;
 

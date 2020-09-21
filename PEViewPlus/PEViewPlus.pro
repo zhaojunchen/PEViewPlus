@@ -43,7 +43,6 @@ HEADERS += \
         dialogdecompiler.h \
         mainwindow.h \
         pch.h \
-        reloc.h \
         treeitem.h \
         treemodel.h \
         uthenticode.h
@@ -61,8 +60,8 @@ RESOURCES += \
     logo.qrc
 
 
-LIBS += $$PWD/lib/capstone/capstone_static_x86.lib
-#LIBS += $$PWD/capstone/capstone_static_x64.lib
+#LIBS += $$PWD/lib/capstone/capstone_static_x86.lib
+LIBS += $$PWD/lib/capstone/capstone_static_x64.lib
 LIBS += $$PWD/lib/openssl/openssl.lib
 LIBS += $$PWD/lib/openssl/libcrypto_static.lib
 LIBS += $$PWD/lib/windows/WS2_32.lib
