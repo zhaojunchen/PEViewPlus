@@ -155,7 +155,7 @@ void MainWindow::on_actionopen_triggered()
 void MainWindow::on_actionClose_triggered()
 {
     // no file is opened
-    if (file == "") {
+    if (pe == nullptr) {
         return;
     }
     file = "";
@@ -193,7 +193,7 @@ void MainWindow::on_actionAbout_triggered()
 {
     QString title = "PEViewPlus";
     QString info =
-        "github: https://github.com/zhaojunchen/PEViewPlus";
+        "https://github.com/zhaojunchen/PEViewPlus";
 
     QMessageBox::about(this,
                        title,
@@ -391,6 +391,7 @@ void MainWindow::on_actionImageBase_triggered()
         QMessageBox::information(this, "Info", "No any modify");
         return;
     }
+
     // TODO
     if (value == origin_imageBase) {
         QMessageBox::information(this, "Info", "No modify");

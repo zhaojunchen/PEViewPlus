@@ -11,8 +11,7 @@
 
 ## 项目结构
 
-PEVIEWPLUS
-<font color=green>//源代码</font>
+**PEViewPlus 工程结构**  
 │  dialogdecompiler.cpp
 │  dialogdecompiler.h
 │  dialogdecompiler.ui
@@ -80,24 +79,24 @@ PEVIEWPLUS
 | 文件名             | 描述                       |
 | :----------------- | -------------------------- |
 | mainwindow.h       | 主窗口                     |
-| treemodel.h        |                            |
-| treeitem.h         |                            |
+| treemodel.h        | treeView的model            |
+| treeitem.h         | treemodel的元素            |
 | PE.h               | 解析PE文件，并构造界面节点 |
 | PeInject.h         | shellcode中注入            |
 | pch.h              | 预编译头                   |
-| dialogdecompiler.h |                            |
+| dialogdecompiler.h | 反编译头                   |
 | Disassembly.h      | 反汇编                     |
 | uthenticode.h      | 验证签名                   |
 
 ### 代码文件
 
-| 文件名          | 描述     |
-| --------------- | -------- |
-| main.cpp        |          |
-| mainwindow.cpp  |          |
-| treeitem.cpp    |          |
-| treemodel.cpp   |          |
-| uthenticode.cpp | 验证签名 |
+| 文件名          | 描述           |
+| --------------- | -------------- |
+| main.cpp        | 主程序入口     |
+| mainwindow.cpp  | 主窗口功能实现 |
+| treeitem.cpp    |                |
+| treemodel.cpp   |                |
+| uthenticode.cpp | 验证签名       |
 
 ### 杂项
 
@@ -158,10 +157,10 @@ private:
 ```c++
 class Node {
 public:
-    QString head;		//
-    QStringList addr;	//
-    QStringList data;	//该节点的
-    QStringList value;	//
+    QString head;		// 树形列表显示内容
+    QStringList addr;	// PE地址
+    QStringList data;	//该节点的数据内容
+    QStringList value;	//数值的描述
     QStringList desc;	//该节点的文字描述
     bool hasDesc;		//desc描述是否有效，若为false，忽略desc成员
     bool isSubTreeNode;	//是否是子树节点
@@ -179,7 +178,7 @@ public:
 
     void      appendChild(TreeItem *child);
 
-    TreeItem* child(int row);
+    TreeItem* child(int row); 
     int       childCount() const;
     int       columnCount() const;
     QVariant  data(int column) const;
