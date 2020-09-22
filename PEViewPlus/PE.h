@@ -157,9 +157,9 @@ public:
     }
 
     // sfy:修改IMAGEBASE并保存文件
-    bool changeImageBase(int32_t newImageBase)const {
+    bool changeImageBase(uint32_t newImageBase)const {
         auto *newPe = new PE(this->file_name);
-        std::vector<int32_t> relocAddrs;
+        std::vector<uint32_t> relocAddrs;
 
         // 存在重定位表，查找需要重定位的数据
         if (index_reloc_table != 0) {
@@ -3539,7 +3539,7 @@ public:
     }
 
     // sfy:修改IMAGEBASE并保存文件
-    bool changeImageBase(int32_t newImageBase)const {
+    bool changeImageBase(uint64_t newImageBase)const {
         auto *newPe = new PE(this->file_name);
         std::vector<int32_t> relocAddrs;
 
@@ -3592,7 +3592,7 @@ public:
         // 修改重定位数据
         for (auto i:relocAddrs) {
             auto *pAddr =
-                const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(newPe->
+                const_cast<uint64_t *>(reinterpret_cast<const uint64_t *>(newPe->
                                                                           content
                                                                           + i));
             *pAddr += newImageBase - nt_header->OptionalHeader.ImageBase;
@@ -3625,16 +3625,13 @@ public:
         {
         case 0x0:
             return 0;
-
             break;
-
         case 0x3:
             return virtualAddressBase + (typeOffset & 0xFFF);
-
             break;
-
         case 0xA:
-
+            return virtualAddressBase + (typeOffset & 0xFFF);
+            break;
         // ToDo
         default:
             throw std::runtime_error{ "Invalid relocType" };
