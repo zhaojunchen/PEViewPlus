@@ -41,6 +41,8 @@ private slots:
 
     void on_actionSignature_triggered();
 
+    void on_actionImageBase_triggered();
+
 private:
 
     Ui::MainWindow *ui = nullptr;

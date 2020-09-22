@@ -93,6 +93,10 @@ public:
         return ret;
     }
 
+    QString getFileName() {
+        return file_name;
+    }
+
     // 代码块
     QByteArray getCodeBlock() {
         auto sizeOfCode = this->nt_header->OptionalHeader.SizeOfCode; // 实际代码
@@ -156,13 +160,17 @@ public:
         return ret;
     }
 
+    DWORD getImageBase() {
+        return nt_header->OptionalHeader.ImageBase;
+    }
+
     // sfy:修改IMAGEBASE并保存文件
-    bool changeImageBase(uint32_t newImageBase)const {
+    bool changeImageBase(uint32_t newImageBase, const QString& filename)const {
         auto *newPe = new PE(this->file_name);
         std::vector<uint32_t> relocAddrs;
 
         // 存在重定位表，查找需要重定位的数据
-        if (index_reloc_table != 0) {
+        if (index_reloc_table != -1) {
             auto *pRelocSection = section_header + index_reloc_table;
             auto  RVAOffset = pRelocSection->VirtualAddress -
                               pRelocSection->PointerToRawData;
@@ -213,11 +221,11 @@ public:
                 const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(newPe->
                                                                           content
                                                                           + i));
+            cout << i;
             *pAddr += newImageBase - nt_header->OptionalHeader.ImageBase;
         }
 
         // 保存文件
-        auto filename = QString("input.exe");
         newPe->savenFile(filename, newPe->content);
         delete newPe;
         return true;
@@ -1716,6 +1724,8 @@ private:
 
             // 重定位表
             if (i == this->index_reloc_table) {
+                // if index_reloc_table is -1 it must can not be add in nodes
+                // so nodes must a not null value collection
                 nodes.push_back(relocTable);
             }
 
@@ -1859,7 +1869,7 @@ private:
         }
     }
 
-    void savenFile(QString& file, const us *content) {
+    void savenFile(const QString& file, const us *content) {
         ofstream f(file.toStdString(), ios::binary | ios::trunc);
 
         if (f) {
@@ -1890,6 +1900,10 @@ public:
             delete it;
         }
         nodes.clear();
+    }
+
+    QString getFileName() {
+        return file_name;
     }
 
     Node* getNode(int index) {
@@ -3530,7 +3544,7 @@ public:
         }
     }
 
-    void savenFile(QString& file, const us *content) {
+    void savenFile(const QString& file, const us *content) {
         ofstream f(file.toStdString(), ios::binary);
 
         if (f) {
@@ -3538,13 +3552,18 @@ public:
         } else {}
     }
 
+    ULONGLONG getImageBase() {
+        return nt_header->OptionalHeader.ImageBase;
+    }
+
     // sfy:修改IMAGEBASE并保存文件
-    bool changeImageBase(uint64_t newImageBase)const {
+    bool changeImageBase(uint64_t       newImageBase,
+                         const QString& filename) const {
         auto *newPe = new PE(this->file_name);
         std::vector<int32_t> relocAddrs;
 
         // 存在重定位表，查找需要重定位的数据
-        if (index_reloc_table != 0) {
+        if (index_reloc_table != -1) {
             auto *pRelocSection = section_header + index_reloc_table;
             auto  RVAOffset = pRelocSection->VirtualAddress -
                               pRelocSection->PointerToRawData;
@@ -3598,8 +3617,9 @@ public:
             *pAddr += newImageBase - nt_header->OptionalHeader.ImageBase;
         }
 
+
         // 保存文件
-        auto filename = QString("input.exe");
+
         newPe->savenFile(filename, newPe->content);
         delete newPe;
         return true;
@@ -3625,13 +3645,19 @@ public:
         {
         case 0x0:
             return 0;
+
             break;
+
         case 0x3:
             return virtualAddressBase + (typeOffset & 0xFFF);
+
             break;
+
         case 0xA:
             return virtualAddressBase + (typeOffset & 0xFFF);
+
             break;
+
         // ToDo
         default:
             throw std::runtime_error{ "Invalid relocType" };

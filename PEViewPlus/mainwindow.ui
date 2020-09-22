@@ -72,6 +72,7 @@
     <addaction name="actionFont"/>
     <addaction name="actionPEInfo"/>
     <addaction name="actionSignature"/>
+    <addaction name="actionImageBase"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -155,6 +156,11 @@
   <action name="actionSignature">
    <property name="text">
     <string>Signature</string>
+   </property>
+  </action>
+  <action name="actionImageBase">
+   <property name="text">
+    <string>ImageBase</string>
    </property>
   </action>
  </widget>

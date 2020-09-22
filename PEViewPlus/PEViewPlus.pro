@@ -14,6 +14,9 @@ TARGET = PEViewPlus
 PRECOMPILED_HEADER = pch.h
 
 TEMPLATE = app
+# https://blog.csdn.net/huhaowa/article/details/82822109
+QMAKE_CXXFLAGS_RELEASE = -O2 -MD -GL
+QMAKE_CXXFLAGS_DEBUG = -Zi -MDd
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -59,7 +62,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     logo.qrc
 
-LIB_VERSION = x64
+LIB_VERSION = x86
 DEFINES += LIB_VERSION
 INCLUDEPATH += $$PWD/include/
 INCLUDEPATH += $$PWD/lib/

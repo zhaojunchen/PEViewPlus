@@ -367,3 +367,62 @@ void MainWindow::on_actionSignature_triggered()
         QMessageBox::critical(this, "failed", "The pe file Signature is error");
     }
 }
+
+void MainWindow::on_actionImageBase_triggered()
+{
+    if (pe == nullptr) {
+        QMessageBox::information(this, "Tips", "Please open a pe file first");
+        return;
+    }
+    auto title = "修改ImageBase";
+    auto label = "原始ImageBase如下";
+    auto origin_imageBase = pe->getImageBase();
+    bool ok = false;
+    int  value = QInputDialog::getInt(this,
+                                      title,
+                                      label,
+                                      origin_imageBase,
+                                      0,
+                                      INT_MAX,
+                                      1,
+                                      &ok);
+
+    if (!ok) {
+        QMessageBox::information(this, "Info", "No any modify");
+        return;
+    }
+    // TODO
+    if (value == origin_imageBase) {
+        QMessageBox::information(this, "Info", "No modify");
+        return;
+    }
+
+    // 弹出打开文件对话框
+    QString curPath = QDir::currentPath(); // 获取系统当前目录
+    title = "Please Open .dll or .exe ";   // 对话框标题
+    QString filter = "PE File(*exe *dll)"; // 文件过滤器
+
+
+    QFileInfo orinalFileInfo(pe->getFileName());
+
+
+    QString saveFile = QFileDialog::getSaveFileName(this,
+                                                    "choose saved file",
+                                                    orinalFileInfo.path(),
+                                                    filter);
+
+    //    auto fileName =
+    if (saveFile.isEmpty() || (saveFile == pe->getFileName())) {
+        QMessageBox::critical(this,
+                              "error",
+                              "Please choose a vaild filename to save");
+        return;
+    }
+    auto ret = pe->changeImageBase(value, saveFile);
+
+    if (ret) {
+        QMessageBox::information(this, "tips", "ImageBase change ok");
+    } else {
+        QMessageBox::critical(this, "tips", "ImageBase change failed");
+    }
+}

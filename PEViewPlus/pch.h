@@ -35,6 +35,7 @@
 #include <QItemSelectionModel>
 #include <QMessageBox>
 #include <QDialog>
+#include <QInputDialog>
 
 
 #include <Windows.h>
