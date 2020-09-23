@@ -42,6 +42,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/**
+ * @brief MainWindow::on_actionopen_triggered
+ * 显示操作, 当现实的table条目太多，会导致for执行耗时太慢
+ */
 void MainWindow::on_actionopen_triggered()
 {
     // 弹出打开文件对话框
@@ -120,9 +124,18 @@ void MainWindow::on_actionopen_triggered()
 
     // 清理tableView的显示
     ui->tableView->update();
+    double inter_times;
+
+    // inter_times = (double)clock();               // 计算循环消耗时间起始
+    // 两个clock之间就是要计算运行时间的程序段
+    pe = new PE(file);
+
+    // inter_times = (double)clock() - inter_times; // 计算循环消耗时间结束
+    //    QMessageBox::information(this, "计算程序运行时间",
+    //                             "消耗时间：\n" + QString::number(inter_times /
+    // 1000));
 
     // 初始化操作
-    pe = new PE(file);
 
     // 优化自己点击自己、造成的TableView刷新开销
     lastClick = 0;
@@ -137,13 +150,21 @@ void MainWindow::on_actionopen_triggered()
     tableModel->setHeaderData(0, Qt::Horizontal, QString("Addr"));
     tableModel->setHeaderData(1, Qt::Horizontal, QString("Data"));
     tableModel->setHeaderData(2, Qt::Horizontal, QString("Value"));
+    inter_times = (double)clock(); // 计算循环消耗时间起始
+    // 两个clock之间就是要计算运行时间的程序段
 
+    //    for (int i = 0; i < node->addr.size(); i++) {
+    //        tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
+    //        tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
+    //        tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
+    //    }
+    inter_times = (double)clock() - inter_times; // 计算循环消耗时间结束
+    cout << inter_times;
 
-    for (int i = 0; i < node->addr.size(); i++) {
-        tableModel->setItem(i, 0, new QStandardItem(node->addr[i]));
-        tableModel->setItem(i, 1, new QStandardItem(node->data[i]));
-        tableModel->setItem(i, 2, new QStandardItem(node->value[i]));
-    }
+    //    QMessageBox::information(this, "计算程序运行时间",
+    //                             "消耗时间：\n" + QString::number(inter_times /
+    // 1000));
+
 
     treeModel = new TreeModel(pe->getPeTreeList());
     ui->treeView->setModel(treeModel);
